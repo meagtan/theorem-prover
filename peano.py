@@ -35,7 +35,7 @@ def prove(stmt, epsilon = 1):
             return True, path.reverse()
         
         for rule, next_stmt in applicable_rules(current):
-            new_dist = dists[current] + distance(rule, current, next_stmt)
+            new_dist = dists[current] + distance(current, next_stmt)
             if next_stmt not in dists or new_dist < dists[next_stmt]:
                 preds[next_stmt] = rule, current
                 dists[next_stmt] = new_dist

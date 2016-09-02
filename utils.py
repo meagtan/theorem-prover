@@ -1,4 +1,25 @@
-## Additional utilities
+## Auxiliary utilities
+
+def applicable_rules(stmt):
+    'Generate new statements that can be derived from stmt by the application of a rule.'
+    global rules
+    # if there is a rule that stmt matches (also consider conjunctions), yield that and True
+    # else look for equation rules whose arguments match stmt or any subexpression of stmt
+    # then apply induction to each variable
+    pass
+
+def estimate_cost(expr):
+    'Measure the edit distance of expression to a literal.'
+    pass
+
+def distance(expr1, expr2):
+    'Measure the edit distance between two expressions.'
+    pass
+
+def add_rule(stmt):
+    'Add statement to rules.'
+    global rules
+    rules.append(stmt)
 
 # by convention, variables are capital letters
 rules = [['=', ['+', 0, 'N'], 'N'],
@@ -7,7 +28,7 @@ rules = [['=', ['+', 0, 'N'], 'N'],
          ['=', ['*', 0, 'N'], 0],
          ['=', ['*', ['s', 'M'], 'N'],
                ['+', 'N', ['*', 'M', 'N']]]]
-literals = ['=', 0, 's', '+', '*', 'and']
+literals = [True, False, 'and', '=', 0, 's', '+', '*']
 
 def is_variable(expr):
     return isinstance(expr, str) and len(expr) == 1 and expr.isupper()
@@ -29,12 +50,3 @@ def matches(expr1, expr2, binds = {}):
             return None
         stack += zip(expr1, expr2)
     return binds
-
-def add_rule(stmt):
-    global rules
-    rules.append(stmt)
-
-def applicable_rules(stmt):
-    'Generate new statements that can be derived from stmt by the application of a rule.'
-    global rules
-    pass
