@@ -21,9 +21,14 @@ def applicable_rules(stmt):
                 yield rule, evaluate(rule[1], binds)
         
         # if rule is an implication, check if the consequent matches stmt
+        if isinstance(rule, list) and rule[0] == 'implies':
+            binds = matches(rule[2], stmt)
+            if binds:
+                yield rule, evaluate(rule[1], binds)
     
     # also look for substitutions on each subexpression of stmt
     if isinstance(stmt, list):
+        # this should not apply to the consequent of an implication
         for i in xrange(1, len(stmt)):
             for rule, res in applicable_rules(stmt[i]):
                 yield rule, stmt[:i] + res + stmt[i+1:] # here check for True arguments in conjunction
