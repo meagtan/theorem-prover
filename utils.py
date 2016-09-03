@@ -5,12 +5,13 @@ def applicable_rules(stmt):
     global rules
     global predicates
     
+    # if there is a rule that stmt matches (also consider conjunctions), yield that and True
     for rule in rules:
-        # if there is a rule that stmt matches (also consider conjunctions), yield that and True
         if matches(rule, stmt):
             yield rule, True
             return
-        
+    
+    for rule in rules:
         # if rule is an equation, check if either side matches stmt
         if isinstance(rule, list) and rule[0] == '=':
             binds = matches(rule[1], stmt)
@@ -28,7 +29,8 @@ def applicable_rules(stmt):
     
     # also look for substitutions on each subexpression of stmt
     if isinstance(stmt, list):
-        # this should not apply to the consequent of an implication
+        # This should not apply to the consequent of an implication, for a => b does not convert c => b into c => a, but
+        #  vice versa. Instead, the antecedent should be able to apply to the consequent.
         for i in xrange(1, len(stmt)):
             for rule, res in applicable_rules(stmt[i]):
                 yield rule, stmt[:i] + res + stmt[i+1:] # here check for True arguments in conjunction
@@ -39,7 +41,8 @@ def applicable_rules(stmt):
                 yield var, induct(stmt, var)
 
 def estimate_cost(expr):
-    'Measure the edit distance of expression to a literal.'
+    'Measure the complexity of the given expression, returning 0 for a literal.'
+    # can measure length, depth, number of free variables
     pass
 
 def distance(expr1, expr2):
