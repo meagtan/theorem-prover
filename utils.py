@@ -3,10 +3,29 @@
 def applicable_rules(stmt):
     'Generate new statements that can be derived from stmt by the application of a rule.'
     global rules
-    # if there is a rule that stmt matches (also consider conjunctions), yield that and True
-    # else look for equation rules whose arguments match stmt or any subexpression of stmt
-    # then apply induction to each variable
-    pass
+    for rule in rules:
+        # if there is a rule that stmt matches (also consider conjunctions), yield that and True
+        if matches(rule, stmt):
+            yield rule, True
+            return
+        
+        # if rule is an equation, check if either side matches stmt
+        if isinstance(rule, list) and rule[0] == '=':
+            binds = matches(rule[1], stmt)
+            if binds:
+                yield rule, evaluate(rule[2], binds)
+            binds = matches(rule[2], stmt)
+            if binds:
+                yield rule, evaluate(rule[1], binds)
+    # also look for substitutions on each subexpression of stmt
+    if isinstance(stmt, list):
+        for i in xrange(1, len(stmt)):
+            for rule, res in applicable_rules(stmt[i]):
+                yield rule, stmt[:i] + res + stmt[i+1:]
+    # then apply induction to each variable for predicates
+    if is_predicate(stmt):
+        for var in variables(stmt):
+            yield var, induct(stmt, var)
 
 def estimate_cost(expr):
     'Measure the edit distance of expression to a literal.'
@@ -50,3 +69,16 @@ def matches(expr1, expr2, binds = {}):
             return None
         stack += zip(expr1, expr2)
     return binds
+
+def evaluate(expr, binds = None):
+    "Evaluate expr using the given bindings for variables, assumed to be valid."
+    if binds is None:
+        binds = {}
+    if expr in literals:
+        return expr
+    if is_variable(expr):
+        if expr in binds:
+            return binds[expr]
+        else:
+            return expr
+    return map(lambda e: evaluate(e, binds), expr)
