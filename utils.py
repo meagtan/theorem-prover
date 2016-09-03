@@ -3,6 +3,8 @@
 def applicable_rules(stmt):
     'Generate new statements that can be derived from stmt by the application of a rule.'
     global rules
+    global predicates
+    
     for rule in rules:
         # if there is a rule that stmt matches (also consider conjunctions), yield that and True
         if matches(rule, stmt):
@@ -17,15 +19,19 @@ def applicable_rules(stmt):
             binds = matches(rule[2], stmt)
             if binds:
                 yield rule, evaluate(rule[1], binds)
+        
+        # if rule is an implication, check if the consequent matches stmt
+    
     # also look for substitutions on each subexpression of stmt
     if isinstance(stmt, list):
         for i in xrange(1, len(stmt)):
             for rule, res in applicable_rules(stmt[i]):
-                yield rule, stmt[:i] + res + stmt[i+1:]
-    # then apply induction to each variable for predicates
-    if is_predicate(stmt):
-        for var in variables(stmt):
-            yield var, induct(stmt, var)
+                yield rule, stmt[:i] + res + stmt[i+1:] # here check for True arguments in conjunction
+        
+        # then apply induction to each variable for predicates
+        if stmt[0] in predicates:
+            for var in variables(stmt):
+                yield var, induct(stmt, var)
 
 def estimate_cost(expr):
     'Measure the edit distance of expression to a literal.'
@@ -47,14 +53,35 @@ rules = [['=', ['+', 0, 'N'], 'N'],
          ['=', ['*', 0, 'N'], 0],
          ['=', ['*', ['s', 'M'], 'N'],
                ['+', 'N', ['*', 'M', 'N']]]]
-literals = [True, False, 'and', '=', 0, 's', '+', '*']
+literals = [True, False, 'and', '=', 'implies', 0, 's', '+', '*']
+predicates = ['and', '=', 'implies']
 
 def is_variable(expr):
     return isinstance(expr, str) and len(expr) == 1 and expr.isupper()
 
+def variables(expr):
+    global literals
+    res = []
+    stack = [expr]
+    while stack:
+        current = stack.pop()
+        if is_variable(current) and current not in res:
+            res.append(current)
+        if isinstance(current, list):
+            stack += current
+    return res
+
+def induct(stmt, var):
+    'Convert statement into conjunction by inducting on variable.'
+    return ['and', evaluate(stmt, {var : 0}), 
+                   ['implies', stmt, evaluate(stmt, {var : ['s', var]})]]
+
 # also allow for lazy expansion, e.g. 1 matches (s 0)
-def matches(expr1, expr2, binds = {}):
+def matches(expr1, expr2, binds = None):
     'Check if expr1 subsumes expr2, and if so return dictionary of bindings.'
+    global literals
+    if binds is None:
+        binds = {}
     stack = [(expr1, expr2)]
     while stack:
         expr1, expr2 = stack.pop()
@@ -72,6 +99,7 @@ def matches(expr1, expr2, binds = {}):
 
 def evaluate(expr, binds = None):
     "Evaluate expr using the given bindings for variables, assumed to be valid."
+    global literals
     if binds is None:
         binds = {}
     if expr in literals:
