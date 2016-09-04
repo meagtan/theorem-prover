@@ -1,67 +1,5 @@
 ## Auxiliary utilities
 
-def applicable_rules(stmt):
-    'Generate new statements that can be derived from stmt by the application of a rule.'
-    global rules
-    global predicates
-    
-    # if there is a rule that stmt matches (also consider conjunctions), yield that and True
-    for rule in rules:
-        if matches(rule, stmt):
-            yield rule, True
-            return
-    
-    for rule in rules:
-        # if rule is an equation, check if either side matches stmt
-        if isinstance(rule, list) and rule[0] == '=':
-            binds = matches(rule[1], stmt)
-            if binds:
-                yield rule, evaluate(rule[2], binds)
-            binds = matches(rule[2], stmt)
-            if binds:
-                yield rule, evaluate(rule[1], binds)
-        
-        # if rule is an implication, check if the consequent matches stmt
-        if isinstance(rule, list) and rule[0] == 'implies':
-            binds = matches(rule[2], stmt)
-            if binds:
-                yield rule, evaluate(rule[1], binds)
-    
-    # also look for substitutions on each subexpression of stmt
-    if isinstance(stmt, list):
-        # This should not apply to the consequent of an implication, for a => b does not convert c => b into c => a, but
-        #  vice versa. Instead, the antecedent should be able to apply to the consequent.
-        for i in xrange(1, len(stmt)):
-            for rule, res in applicable_rules(stmt[i]):
-                yield rule, stmt[:i] + res + stmt[i+1:] # here check for True arguments in conjunction
-        
-        # then apply induction to each variable for predicates
-        if stmt[0] in predicates:
-            for var in variables(stmt):
-                yield var, induct(stmt, var)
-
-def estimate_cost(expr):
-    'Measure the complexity of the given expression, returning 0 for a literal.'
-    # can measure length, depth, number of free variables
-    pass
-
-def distance(expr1, expr2):
-    'Measure the edit distance between two expressions.'
-    # Extend the Levenshtein distance between two strings, interpreting expressions as atoms or lists of expressions.
-    # The elementary operations transforming one expression into another are taken to be the following:
-    # - The application of a literal to an expression, e.g. f applied to x is [f, x] and [f, x] applied to y is [f, x, y]
-    # - The removal of a literal from the end of a function application
-    # - The substitution of two literals (and perhaps the instantiation of a variable by a literal)
-    # If both arguments are lists, they are compared by the usual Levenshtein distance, except the cost of deletion or insertion
-    #  is equal to the deep length of the item deleted and the cost of substitution is the distance of the elements substituted.
-    # Else, if at least one argument is an atom, 
-    pass
-
-def add_rule(stmt):
-    'Add statement to rules.'
-    global rules
-    rules.append(stmt)
-
 # by convention, variables are capital letters
 rules = [['=', ['+', 0, 'N'], 'N'],
          ['=', ['+', ['s', 'M'], 'N'],
@@ -126,3 +64,15 @@ def evaluate(expr, binds = None):
         else:
             return expr
     return map(lambda e: evaluate(e, binds), expr)
+
+def deep_length(expr):
+    'Return the number of atoms in an expression.'
+    res = 0
+    stack = [expr]
+    while stack:
+        expr = stack.pop()
+        if isinstance(expr, list):
+            stack += expr
+        else:
+            res += 1
+    return res
