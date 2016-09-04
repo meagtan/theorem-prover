@@ -47,6 +47,14 @@ def estimate_cost(expr):
 
 def distance(expr1, expr2):
     'Measure the edit distance between two expressions.'
+    # Extend the Levenshtein distance between two strings, interpreting expressions as atoms or lists of expressions.
+    # The elementary operations transforming one expression into another are taken to be the following:
+    # - The application of a literal to an expression, e.g. f applied to x is [f, x] and [f, x] applied to y is [f, x, y]
+    # - The removal of a literal from the end of a function application
+    # - The substitution of two literals (and perhaps the instantiation of a variable by a literal)
+    # If both arguments are lists, they are compared by the usual Levenshtein distance, except the cost of deletion or insertion
+    #  is equal to the deep length of the item deleted and the cost of substitution is the distance of the elements substituted.
+    # Else, if at least one argument is an atom, 
     pass
 
 def add_rule(stmt):
