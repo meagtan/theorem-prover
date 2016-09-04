@@ -26,7 +26,7 @@ def prove(stmt, epsilon = 1):
         # for every rule in env, applicable_rules generates an evaluation rule converting
         #  that rule to true
         if current is True:
-            add_rule(stmt)
+            rules.append(stmt)
             path = []
             while current in preds:
                 path.append((preds[current][0], current))
@@ -125,8 +125,3 @@ def distance(expr1, expr2):
     #  is equal to the deep length of the item deleted and the cost of substitution is the distance of the elements substituted.
     # Else, if at least one argument is an atom, 
     pass
-
-def add_rule(stmt):
-    'Add statement to rules.'
-    global rules
-    rules.append(stmt)
