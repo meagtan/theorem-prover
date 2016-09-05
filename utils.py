@@ -51,7 +51,16 @@ def distance(expr1, expr2):
 ## Auxiliary utilities
 
 # by convention, variables are capital letters
-rules = [['=', ['+', 0, 'N'], 'N'],
+rules = [['=', 'X', 'X'], 
+         ['=', ['=', 'X', 'Y'], ['=', 'Y', 'X']],
+         ['implies', ['and', ['=', 'X', 'Y'], ['=', 'Y', 'Z']],
+                     ['=', 'X', 'Z']],
+         ['implies', ['=', ['s', 'M'], ['s', 'N']],
+                     ['=', 'M', 'N']],
+         ['and', True, True],
+         ['implies', 'P', True],
+         ['implies', False, 'P'],
+         ['=', ['+', 0, 'N'], 'N'],
          ['=', ['+', ['s', 'M'], 'N'],
                ['s', ['+', 'M', 'N']]],
          ['=', ['*', 0, 'N'], 0],

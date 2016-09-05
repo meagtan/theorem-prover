@@ -8,7 +8,17 @@
 #           ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']],
 #                       ['=', ['+', ['s', 'M'], ['+', 'N', 'K']], ['+', ['+', ['s', 'M'], 'N'], 'K']]]] # induction on M
 # - ['and', ['=', ['+', 'N', 'K'], ['+', 'N', 'K']],
-#           ['implies', 
+#           ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']],
+#                       ['=', ['s', ['+', 'M', ['+', 'N', 'K']]], ['s', ['+', ['+', 'M', 'N'], 'K']]]]] # definitions of +
+# - ['and', True,
+#           ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']],
+#                       ['=', ['s', ['+', 'M', ['+', 'N', 'K']]], ['s', ['+', ['+', 'M', 'N'], 'K']]]]] # equality
+# - ['and', True, 
+#           ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']],
+#                       ['=', ['s', ['+', 'M', ['+', 'N', 'K']]], ['s', ['+', 'M', ['+', 'N', 'K']]]]] # application of antecedent
+# - ['and', True, ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']], True] # equality
+# - ['and', True, True] # truth of implication
+# - True # truth of conjunction
 
 import heapq
 from utils import *
