@@ -3,9 +3,10 @@
 def estimate_cost(expr):
     'Measure the complexity of the given expression, returning 0 for a literal.'
     # TODO can measure length, depth, number of free variables
+    # Make sure the heuristic is consistent with distance()
     pass
 
-# TODO memoize this
+# TODO memoize this and distinguish variables from literals
 def distance(expr1, expr2):
     '''Measure the edit distance between two expressions, defined based on the following elementary operations:
     - The application of a literal to an expression, e.g. f applied to x is [f, x] and [f, x] applied to y is [f, x, y].
@@ -32,7 +33,7 @@ def distance(expr1, expr2):
                     d[i, j] = d[i - 1, j - 1]
                 else:
                     d[i, j] = min(d[i - 1, j]     + deep_length(expr1[i]),        # delete expr1[i]
-                                  d[i, j - 1]     + deep_length(expr2[j]),        # insert expr2[j]
+                                  d[i,     j - 1] + deep_length(expr2[j]),        # insert expr2[j]
                                   d[i - 1, j - 1] + distance(expr1[i], expr2[j])) # substitute expr2[j] for expr1[i]
         return d[m - 1, n - 1]
             
@@ -41,11 +42,11 @@ def distance(expr1, expr2):
     if isinstance(expr1, list) and isinstance(expr2, list):
         return list_distance(expr1, expr2)
     
-    # Else, if at least one argument is an atom, the distance is the deep length of the other argument, possibly minus one
-    #  for the case of the former being contained inside the latter
+    # Else, if at least one argument is an atom, the distance is the deep length of the other argument, 
+    #  possibly minus one for the case of the former being contained inside the latter
     if isinstance(expr1, list):
         expr2, expr1 = expr1, expr2
-    return deep_length(expr2) - expr1 in flatten(expr2)
+    return deep_length(expr2) - (expr1 in flatten(expr2))
 
 ## Auxiliary utilities
 
@@ -60,18 +61,20 @@ literals = [True, False, 'and', '=', 'implies', 0, 's', '+', '*']
 predicates = ['and', '=', 'implies']
 
 def is_variable(expr):
-    return isinstance(expr, str) and len(expr) == 1 and expr.isupper()
+    return isinstance(expr, str) and expr[0].isupper()
 
 def variables(expr):
     global literals
     res = []
     stack = [expr]
+    
     while stack:
         current = stack.pop()
         if is_variable(current) and current not in res:
             res.append(current)
         if isinstance(current, list):
             stack += current
+    
     return res
 
 def induct(stmt, var):
@@ -86,6 +89,7 @@ def matches(expr1, expr2, binds = None):
     if binds is None:
         binds = {}
     stack = [(expr1, expr2)]
+    
     while stack:
         expr1, expr2 = stack.pop()
         if expr1 in literals and expr1 != expr2:
@@ -98,6 +102,7 @@ def matches(expr1, expr2, binds = None):
         if not isinstance(expr2, list) or len(expr1) != len(expr2):
             return None
         stack += zip(expr1, expr2)
+    
     return binds
 
 def evaluate(expr, binds = None):
@@ -105,6 +110,7 @@ def evaluate(expr, binds = None):
     global literals
     if binds is None:
         binds = {}
+    
     if expr in literals:
         return expr
     if is_variable(expr):
@@ -112,6 +118,7 @@ def evaluate(expr, binds = None):
             return binds[expr]
         else:
             return expr
+    
     return map(lambda e: evaluate(e, binds), expr)
 
 def deep_length(expr):
@@ -122,10 +129,12 @@ def flatten(expr):
     'Return the list of atoms in an expression.'
     res = []
     stack = [expr]
+    
     while stack:
         expr = stack.pop()
         if isinstance(expr, list):
             stack += expr
         else:
             res.append(expr)
+    
     return res
