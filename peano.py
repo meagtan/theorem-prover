@@ -64,18 +64,18 @@ def prove(stmt, epsilon = 1):
     return None
 
 # TODO only yield when result is different from statement
-def applicable_rules(stmt, hyps = []):
+def applicable_rules(stmt):
     'Generate new statements that can be derived from stmt by the application of a rule.'
     global rules
     global predicates
     
     # if there is a rule that stmt matches (also consider conjunctions), yield that and True
-    for rule in rules + hyps:
+    for rule in rules:
         if matches(rule, stmt):
             yield rule, True
             return
     
-    for rule in rules + hyps:
+    for rule in rules:
         # if rule is an equation, check if either side matches stmt
         if isinstance(rule, list) and rule[0] == '=':
             binds = matches(rule[1], stmt)
@@ -93,13 +93,11 @@ def applicable_rules(stmt, hyps = []):
     
     # also look for substitutions on each subexpression of stmt
     if isinstance(stmt, list):
-        if stmt[0] == 'implies':
-            # the antecedent of the implication applies to the consequent
-            for rule, res in applicable_rules(stmt[2], hyps + [stmt[1]]):
-                yield rule, stmt[:2] + [res]
-        else:
+        # implications must preserve variable bindings
+        # the antecedent can be made to apply to the consequent, but that doesn't affix the binding of its variables
+        if stmt[0] != 'implies':
             for i in xrange(1, len(stmt)):
-                for rule, res in applicable_rules(stmt[i], hyps):
+                for rule, res in applicable_rules(stmt[i]):
                     yield rule, stmt[:i] + [res] + stmt[i+1:] # here check for True arguments in conjunction
         
         # then apply induction to each variable for predicates

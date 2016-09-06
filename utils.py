@@ -49,19 +49,20 @@ def distance(expr1, expr2):
     #  is equal to the deep length of the item deleted and the cost of substitution is the distance of the elements substituted.
     if isinstance(expr1, list) and isinstance(expr2, list):
         # simplify and generalize
-        if expr1[0] == 'and':
-            return sum(distance(e, expr2) for e in expr1[1:])
-        if expr2[0] == 'and':
-            return sum(distance(expr1, e) for e in expr2[1:])
-        if expr1[0] == 'or':
-            return min(distance(e, expr2) for e in expr1[1:])
-        if expr2[0] == 'or':
-            return min(distance(expr1, e) for e in expr2[1:])
-        # quick solution: only check consequent in implication
-        if expr1[0] == 'implies':
-            return distance(expr1[2], expr2)
-        if expr2[0] == 'implies':
-            return distance(expr1, expr2[2])
+        # TODO this doesn't consider [and,X,Y] and [and,X,Y] to be equal, comparing the first X to the second Y
+        # if expr1[0] == 'and':
+        #     return sum(distance(e, expr2) for e in expr1[1:])
+        # if expr2[0] == 'and':
+        #     return sum(distance(expr1, e) for e in expr2[1:])
+        # if expr1[0] == 'or':
+        #     return min(distance(e, expr2) for e in expr1[1:])
+        # if expr2[0] == 'or':
+        #     return min(distance(expr1, e) for e in expr2[1:])
+        # # quick solution: only check consequent in implication
+        # if expr1[0] == 'implies':
+        #     return distance(expr1[2], expr2)
+        # if expr2[0] == 'implies':
+        #     return distance(expr1, expr2[2])
         
         return list_distance(expr1, expr2)
     
@@ -78,11 +79,12 @@ rules = [['=', 'X', 'X'],
          ['=', ['=', 'X', 'Y'], ['=', 'Y', 'X']],
          ['implies', ['and', ['=', 'X', 'Y'], ['=', 'Y', 'Z']],
                      ['=', 'X', 'Z']],
-         ['implies', ['=', ['s', 'M'], ['s', 'N']],
-                     ['=', 'M', 'N']],
+         ['=', ['=', ['s', 'M'], ['s', 'N']],
+               ['=', 'M', 'N']],
          ['and', True, True],
          ['implies', 'P', True],
          ['implies', False, 'P'],
+         ['implies', 'P', 'P'],
          ['=', ['+', 0, 'N'], 'N'],
          ['=', ['+', ['s', 'M'], 'N'],
                ['s', ['+', 'M', 'N']]],
@@ -91,6 +93,7 @@ rules = [['=', 'X', 'X'],
                ['+', 'N', ['*', 'M', 'N']]]]
 literals = [True, False, 'and', 'or', 'implies', '=', 0, 's', '+', '*']
 predicates = ['and', '=', 'implies']
+# TODO assign types to literals and variables
 
 def is_variable(expr):
     return isinstance(expr, str) and expr[0].isupper()
