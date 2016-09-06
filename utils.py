@@ -2,6 +2,12 @@
 
 def estimate_cost(expr):
     'Measure the complexity of the given expression, returning 0 for a literal.'
+    if expr[0] == 'and':
+        return sum(estimate_cost(e) for e in expr[1:])
+    if expr[0] == 'or':
+        return sum(estimate_cost(e) for e in expr[1:])
+    if expr[0] == 'implies':
+        return estimate_cost(expr[2]) # only check consequent
     # TODO can measure length, depth, number of free variables
     # Make sure the heuristic is consistent with distance()
     pass
@@ -27,8 +33,8 @@ def distance(expr1, expr2):
         for j in xrange(n):
             d[0, j] = distance(expr1[0], expr2[j])
         
-        for j in xrange(n):
-            for i in xrange(m):
+        for j in xrange(1, n):
+            for i in xrange(1, m):
                 if expr1[i] == expr2[j]:
                     d[i, j] = d[i - 1, j - 1]
                 else:
@@ -40,6 +46,21 @@ def distance(expr1, expr2):
     # If both arguments are lists, they are compared by the usual Levenshtein distance, except the cost of deletion or insertion
     #  is equal to the deep length of the item deleted and the cost of substitution is the distance of the elements substituted.
     if isinstance(expr1, list) and isinstance(expr2, list):
+        # simplify and generalize
+        if expr1[0] == 'and':
+            return sum(distance(e, expr2) for e in expr1[1:])
+        if expr2[0] == 'and':
+            return sum(distance(expr1, e) for e in expr2[1:])
+        if expr1[0] == 'or':
+            return min(distance(e, expr2) for e in expr1[1:])
+        if expr2[0] == 'or':
+            return min(distance(expr1, e) for e in expr2[1:])
+        # quick solution: only check consequent in implication
+        if expr1[0] == 'implies':
+            return distance(expr1[2], expr2)
+        if expr2[0] == 'implies':
+            return distance(expr1, expr2[2])
+        
         return list_distance(expr1, expr2)
     
     # Else, if at least one argument is an atom, the distance is the deep length of the other argument, 
@@ -66,7 +87,7 @@ rules = [['=', 'X', 'X'],
          ['=', ['*', 0, 'N'], 0],
          ['=', ['*', ['s', 'M'], 'N'],
                ['+', 'N', ['*', 'M', 'N']]]]
-literals = [True, False, 'and', '=', 'implies', 0, 's', '+', '*']
+literals = [True, False, 'and', 'or', 'implies', '=', 0, 's', '+', '*']
 predicates = ['and', '=', 'implies']
 
 def is_variable(expr):
@@ -84,6 +105,7 @@ def variables(expr):
         if isinstance(current, list):
             stack += current
     
+    res.reverse()
     return res
 
 def induct(stmt, var):
@@ -148,4 +170,5 @@ def flatten(expr):
         else:
             res.append(expr)
     
+    res.reverse()
     return res
