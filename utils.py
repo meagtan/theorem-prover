@@ -102,15 +102,17 @@ def matches(expr1, expr2, binds = None):
     while stack:
         expr1, expr2 = stack.pop()
         if expr1 in literals and expr1 != expr2:
-            return False
+                return False
         if is_variable(expr1):
             if expr1 not in binds:
-                binds[expr1] = expr2
-            elif binds[expr1] == expr2:
+                if expr1 != expr2:
+                    binds[expr1] = expr2
+            elif binds[expr1] != expr2:
                 return False
-        if not isinstance(expr2, list) or len(expr1) != len(expr2):
-            return False
-        stack += zip(expr1, expr2)
+        if isinstance(expr1, list):
+            if not isinstance(expr2, list) or len(expr1) != len(expr2):
+                return False
+            stack += zip(expr1, expr2)
     
     return binds
 
