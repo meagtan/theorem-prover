@@ -8,6 +8,8 @@ def estimate_cost(expr):
         return sum(estimate_cost(e) for e in expr[1:])
     if expr[0] == 'implies':
         return estimate_cost(expr[2]) # only check consequent
+    if expr[0] == '=':
+        return distance(expr[1], expr[2])
     # TODO can measure length, depth, number of free variables
     # Make sure the heuristic is consistent with distance()
     pass

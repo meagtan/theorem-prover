@@ -1,4 +1,4 @@
-### Theorem proving based on the Peano axioms
+### Theorem proving on the Peano axioms
 
 # The theorem proving algorithm operates on expressions comprised of literals and universally quantified variables.
 # A statement is proven by a series of transformations that ends in the literal True.
@@ -39,7 +39,7 @@ def prove(stmt, epsilon = 1):
         current = heappop(to_visit)[1]
         
         # current already visited
-        if current in preds.values():
+        if current in preds.values() or current is False:
             continue
         
         # found conclusion, end search and construct proof from preds
@@ -63,18 +63,19 @@ def prove(stmt, epsilon = 1):
     
     return None
 
-def applicable_rules(stmt):
+# TODO only yield when result is different from statement
+def applicable_rules(stmt, hyps = []):
     'Generate new statements that can be derived from stmt by the application of a rule.'
     global rules
     global predicates
     
     # if there is a rule that stmt matches (also consider conjunctions), yield that and True
-    for rule in rules:
+    for rule in rules + hyps:
         if matches(rule, stmt):
             yield rule, True
             return
     
-    for rule in rules:
+    for rule in rules + hyps:
         # if rule is an equation, check if either side matches stmt
         if isinstance(rule, list) and rule[0] == '=':
             binds = matches(rule[1], stmt)
@@ -92,11 +93,14 @@ def applicable_rules(stmt):
     
     # also look for substitutions on each subexpression of stmt
     if isinstance(stmt, list):
-        # TODO This should not apply to the consequent of an implication, for a => b does not convert c => b into c => a, but
-        #  vice versa. Instead, the antecedent should be able to apply to the consequent.
-        for i in xrange(1, len(stmt)):
-            for rule, res in applicable_rules(stmt[i]):
-                yield rule, stmt[:i] + res + stmt[i+1:] # here check for True arguments in conjunction
+        if stmt[0] == 'implies':
+            # the antecedent of the implication applies to the consequent
+            for rule, res in applicable_rules(stmt[2], hyps + [stmt[1]]):
+                yield rule, stmt[:2] + [res]
+        else:
+            for i in xrange(1, len(stmt)):
+                for rule, res in applicable_rules(stmt[i], hyps):
+                    yield rule, stmt[:i] + [res] + stmt[i+1:] # here check for True arguments in conjunction
         
         # then apply induction to each variable for predicates
         if stmt[0] in predicates:
