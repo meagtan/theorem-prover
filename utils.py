@@ -2,14 +2,15 @@
 
 def estimate_cost(expr):
     'Measure the complexity of the given expression, returning 0 for a literal.'
-    if expr[0] == 'and':
-        return sum(estimate_cost(e) for e in expr[1:])
-    if expr[0] == 'or':
-        return sum(estimate_cost(e) for e in expr[1:])
-    if expr[0] == 'implies':
-        return estimate_cost(expr[2]) # only check consequent
-    if expr[0] == '=':
-        return distance(expr[1], expr[2])
+    if isinstance(expr, tuple):
+        if expr[0] == 'and':
+            return sum(estimate_cost(e) for e in expr[1:])
+        if expr[0] == 'or':
+            return sum(estimate_cost(e) for e in expr[1:])
+        if expr[0] == 'implies':
+            return estimate_cost(expr[2]) # only check consequent
+        if expr[0] == '=':
+            return distance(expr[1], expr[2])
     # TODO can measure length, depth, number of free variables
     # Make sure the heuristic is consistent with distance()
     pass
@@ -47,22 +48,22 @@ def distance(expr1, expr2):
             
     # If both arguments are lists, they are compared by the usual Levenshtein distance, except the cost of deletion or insertion
     #  is equal to the deep length of the item deleted and the cost of substitution is the distance of the elements substituted.
-    if isinstance(expr1, list) and isinstance(expr2, list):
+    if isinstance(expr1, tuple) and isinstance(expr2, tuple):
         # simplify and generalize
         # TODO this doesn't consider [and,X,Y] and [and,X,Y] to be equal, comparing the first X to the second Y
         # if expr1[0] == 'and':
         #     return sum(distance(e, expr2) for e in expr1[1:])
         # if expr2[0] == 'and':
         #     return sum(distance(expr1, e) for e in expr2[1:])
-        # if expr1[0] == 'or':
-        #     return min(distance(e, expr2) for e in expr1[1:])
-        # if expr2[0] == 'or':
-        #     return min(distance(expr1, e) for e in expr2[1:])
-        # # quick solution: only check consequent in implication
-        # if expr1[0] == 'implies':
-        #     return distance(expr1[2], expr2)
-        # if expr2[0] == 'implies':
-        #     return distance(expr1, expr2[2])
+        if expr1[0] == 'or':
+            return min(distance(e, expr2) for e in expr1[1:])
+        if expr2[0] == 'or':
+            return min(distance(expr1, e) for e in expr2[1:])
+        # quick solution: only check consequent in implication
+        if expr1[0] == 'implies':
+            return distance(expr1[2], expr2)
+        if expr2[0] == 'implies':
+            return distance(expr1, expr2[2])
         
         return list_distance(expr1, expr2)
     
@@ -75,22 +76,22 @@ def distance(expr1, expr2):
 ## Auxiliary utilities
 
 # by convention, variables are capital letters
-rules = [['=', 'X', 'X'], 
-         ['=', ['=', 'X', 'Y'], ['=', 'Y', 'X']],
-         ['implies', ['and', ['=', 'X', 'Y'], ['=', 'Y', 'Z']],
-                     ['=', 'X', 'Z']],
-         ['=', ['=', ['s', 'M'], ['s', 'N']],
-               ['=', 'M', 'N']],
-         ['and', True, True],
-         ['implies', 'P', True],
-         ['implies', False, 'P'],
-         ['implies', 'P', 'P'],
-         ['=', ['+', 0, 'N'], 'N'],
-         ['=', ['+', ['s', 'M'], 'N'],
-               ['s', ['+', 'M', 'N']]],
-         ['=', ['*', 0, 'N'], 0],
-         ['=', ['*', ['s', 'M'], 'N'],
-               ['+', 'N', ['*', 'M', 'N']]]]
+rules = [('=', 'X', 'X'), 
+         ('=', ('=', 'X', 'Y'), ('=', 'Y', 'X')],
+         ('implies', ('and', ('=', 'X', 'Y'), ('=', 'Y', 'Z')),
+                     ('=', 'X', 'Z')),
+         ('=', ('=', ('s', 'M'), ('s', 'N')),
+               ('=', 'M', 'N')),
+         ('and', True, True),
+         ('implies', 'P', True),
+         ('implies', False, 'P'),
+         ('implies', 'P', 'P'),
+         ('=', ('+', 0, 'N'), 'N'),
+         ('=', ('+', ('s', 'M'), 'N'),
+               ('s', ('+', 'M', 'N'))),
+         ('=', ('*', 0, 'N'), 0],
+         ('=', ('*', ('s', 'M'), 'N'),
+               ('+', 'N', ('*', 'M', 'N')))]
 literals = [True, False, 'and', 'or', 'implies', '=', 0, 's', '+', '*']
 predicates = ['and', '=', 'implies']
 # TODO assign types to literals and variables
@@ -115,8 +116,8 @@ def variables(expr):
 
 def induct(stmt, var):
     'Convert statement into conjunction by inducting on variable.'
-    return ['and', evaluate(stmt, {var : 0}), 
-                   ['implies', stmt, evaluate(stmt, {var : ['s', var]})]]
+    return ('and', evaluate(stmt, {var : 0}), 
+                   ('implies', stmt, evaluate(stmt, {var : ('s', var)})))
 
 # also allow for lazy expansion, e.g. 1 matches (s 0)
 def matches(expr1, expr2, binds = None):

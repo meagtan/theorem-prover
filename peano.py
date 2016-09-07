@@ -3,21 +3,21 @@
 # The theorem proving algorithm operates on expressions comprised of literals and universally quantified variables.
 # A statement is proven by a series of transformations that ends in the literal True.
 # For example, the proof that addition, defined as in the Peano axioms, is associative, is rpresented by these transformations:
-# - ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']] # statement of hypothesis
-# - ['and', ['=', ['+', 0, ['+', 'N', 'K']], ['+', ['+', 0, 'N'], 'K']],
-#           ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']],
-#                       ['=', ['+', ['s', 'M'], ['+', 'N', 'K']], ['+', ['+', ['s', 'M'], 'N'], 'K']]]] # induction on M
-# - ['and', ['=', ['+', 'N', 'K'], ['+', 'N', 'K']],
-#           ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']],
-#                       ['=', ['s', ['+', 'M', ['+', 'N', 'K']]], ['s', ['+', ['+', 'M', 'N'], 'K']]]]] # definitions of +
-# - ['and', True,
-#           ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']],
-#                       ['=', ['s', ['+', 'M', ['+', 'N', 'K']]], ['s', ['+', ['+', 'M', 'N'], 'K']]]]] # equality
-# - ['and', True, 
-#           ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']],
-#                       ['=', ['s', ['+', 'M', ['+', 'N', 'K']]], ['s', ['+', 'M', ['+', 'N', 'K']]]]] # application of antecedent
-# - ['and', True, ['implies', ['=', ['+', 'M', ['+', 'N', 'K']], ['+', ['+', 'M', 'N'], 'K']], True] # equality
-# - ['and', True, True] # truth of implication
+# - ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')) # statement of hypothesis
+# - ('and', ('=', ('+', 0, ('+', 'N', 'K')), ('+', ('+', 0, 'N'), 'K')),
+#           ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')),
+#                       ('=', ('+', ('s', 'M'), ('+', 'N', 'K')), ('+', ('+', ('s', 'M'), 'N'), 'K')))) # induction on M
+# - ('and', ('=', ('+', 'N', 'K'), ('+', 'N', 'K')),
+#           ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')),
+#                       ('=', ('s', ('+', 'M', ('+', 'N', 'K'))), ('s', ('+', ('+', 'M', 'N'), 'K'))))) # definitions of +
+# - ('and', True,
+#           ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')),
+#                       ('=', ('s', ('+', 'M', ('+', 'N', 'K'))), ('s', ('+', ('+', 'M', 'N'), 'K'))))) # equality
+# - ('and', True, 
+#           ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')),
+#                       ('=', ('s', ('+', 'M', ('+', 'N', 'K'))), ('s', ('+', 'M', ('+', 'N', 'K'))))) # application of antecedent
+# - ('and', True, ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')), True) # equality
+# - ('and', True, True) # truth of implication
 # - True # truth of conjunction
 
 import heapq
