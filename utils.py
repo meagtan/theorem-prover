@@ -69,7 +69,7 @@ def distance(expr1, expr2):
     
     # Else, if at least one argument is an atom, the distance is the deep length of the other argument, 
     #  possibly minus one for the case of the former being contained inside the latter
-    if isinstance(expr1, list):
+    if isinstance(expr1, tuple):
         expr2, expr1 = expr1, expr2
     return deep_length(expr2) - (expr1 in flatten(expr2))
 
@@ -108,7 +108,7 @@ def variables(expr):
         current = stack.pop()
         if is_variable(current) and current not in res:
             res.append(current)
-        if isinstance(current, list):
+        if isinstance(current, tuple):
             stack += current
     
     res.reverse()
@@ -137,8 +137,8 @@ def matches(expr1, expr2, binds = None):
                     binds[expr1] = expr2
             elif binds[expr1] != expr2:
                 return False
-        if isinstance(expr1, list):
-            if not isinstance(expr2, list) or len(expr1) != len(expr2):
+        if isinstance(expr1, tuple):
+            if not isinstance(expr2, tuple) or len(expr1) != len(expr2):
                 return False
             stack += zip(expr1, expr2)
     
@@ -158,7 +158,7 @@ def evaluate(expr, binds = None):
         else:
             return expr
     
-    return map(lambda e: evaluate(e, binds), expr)
+    return tuple(map(lambda e: evaluate(e, binds), expr))
 
 def deep_length(expr):
     'Return the number of atoms in an expression.'
@@ -171,7 +171,7 @@ def flatten(expr):
     
     while stack:
         expr = stack.pop()
-        if isinstance(expr, list):
+        if isinstance(expr, tuple):
             stack += expr
         else:
             res.append(expr)

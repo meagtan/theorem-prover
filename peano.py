@@ -77,7 +77,7 @@ def applicable_rules(stmt):
     
     for rule in rules:
         # if rule is an equation, check if either side matches stmt
-        if isinstance(rule, list) and rule[0] == '=':
+        if isinstance(rule, tuple) and rule[0] == '=':
             binds = matches(rule[1], stmt)
             if binds:
                 yield rule, evaluate(rule[2], binds)
@@ -86,13 +86,13 @@ def applicable_rules(stmt):
                 yield rule, evaluate(rule[1], binds)
         
         # if rule is an implication, check if the consequent matches stmt
-        if isinstance(rule, list) and rule[0] == 'implies':
+        if isinstance(rule, tuple) and rule[0] == 'implies':
             binds = matches(rule[2], stmt)
             if binds:
                 yield rule, evaluate(rule[1], binds)
     
     # also look for substitutions on each subexpression of stmt
-    if isinstance(stmt, list):
+    if isinstance(stmt, tuple):
         # implications must preserve variable bindings
         # the antecedent can be made to apply to the consequent, but that doesn't affix the binding of its variables
         if stmt[0] != 'implies':
