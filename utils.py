@@ -6,7 +6,7 @@ def estimate_cost(expr):
         if expr[0] == 'and':
             return sum(estimate_cost(e) for e in expr[1:])
         if expr[0] == 'or':
-            return sum(estimate_cost(e) for e in expr[1:])
+            return min(estimate_cost(e) for e in expr[1:])
         if expr[0] == 'implies':
             return estimate_cost(expr[2]) # only check consequent
         if expr[0] == '=':
@@ -55,9 +55,9 @@ def distance(expr1, expr2):
             return sum(distance(e, expr2) for e in expr1[1:])
         if expr2[0] == 'and':
             return sum(distance(expr1, e) for e in expr2[1:])
-        if expr1[0] == 'or':
+        if expr1[0] == 'or' or expr1[0] == 'implies':
             return min(distance(e, expr2) for e in expr1[1:])
-        if expr2[0] == 'or':
+        if expr2[0] == 'or' or expr2[0] == 'implies':
             return min(distance(expr1, e) for e in expr2[1:])
         # quick solution: only check consequent in implication
         if expr1[0] == 'implies':
@@ -93,7 +93,7 @@ rules = [('=', 'X', 'X'),
          ('=', ('*', ('s', 'M'), 'N'),
                ('+', 'N', ('*', 'M', 'N')))]
 literals = [True, False, 'and', 'or', 'implies', '=', 0, 's', '+', '*']
-predicates = ['and', '=', 'implies']
+predicates = ['and', 'or', '=', 'implies']
 # TODO assign types to literals and variables
 
 def is_variable(expr):

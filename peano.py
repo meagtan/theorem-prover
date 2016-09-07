@@ -70,6 +70,7 @@ def applicable_rules(stmt):
     global predicates
     
     # if there is a rule that stmt matches (also consider conjunctions), yield that and True
+    # TODO should also consider p implies q when p = q is a rule
     for rule in rules:
         if matches(rule, stmt):
             yield rule, True
