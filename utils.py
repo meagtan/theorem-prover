@@ -11,8 +11,7 @@ def estimate_cost(expr):
             return estimate_cost(expr[2]) # only check consequent
         if expr[0] == '=':
             return distance(expr[1], expr[2])
-    # TODO can measure length, depth, number of free variables
-    # Make sure the heuristic is consistent with distance()
+    # The number of variables, deep length - 1 and depth are all consistent heuristics. Which of their linear combinations are?
     pass
 
 # TODO memoize this and distinguish variables from literals
@@ -50,11 +49,12 @@ def distance(expr1, expr2):
     #  is equal to the deep length of the item deleted and the cost of substitution is the distance of the elements substituted.
     if isinstance(expr1, tuple) and isinstance(expr2, tuple):
         # simplify and generalize
-        # TODO this doesn't consider [and,X,Y] and [and,X,Y] to be equal, comparing the first X to the second Y
-        # if expr1[0] == 'and':
-        #     return sum(distance(e, expr2) for e in expr1[1:])
-        # if expr2[0] == 'and':
-        #     return sum(distance(expr1, e) for e in expr2[1:])
+        if expr1[0] == 'and':
+            if expr2[0] == 'and':
+                return min(distance(expr1[1], expr2[1]), distance(expr1[2], expr2[1]))
+            return sum(distance(e, expr2) for e in expr1[1:])
+        if expr2[0] == 'and':
+            return sum(distance(expr1, e) for e in expr2[1:])
         if expr1[0] == 'or':
             return min(distance(e, expr2) for e in expr1[1:])
         if expr2[0] == 'or':
