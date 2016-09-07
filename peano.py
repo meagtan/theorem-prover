@@ -98,7 +98,7 @@ def applicable_rules(stmt):
         if stmt[0] != 'implies':
             for i in xrange(1, len(stmt)):
                 for rule, res in applicable_rules(stmt[i]):
-                    yield rule, stmt[:i] + [res] + stmt[i+1:] # here check for True arguments in conjunction
+                    yield rule, stmt[:i] + (res,) + stmt[i+1:] # here check for True arguments in conjunction
         
         # then apply induction to each variable for predicates
         if stmt[0] in predicates:
