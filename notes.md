@@ -29,7 +29,7 @@ d'(expr1, expr2) =
     d'(x, expr2) o d'(y, expr2)
   else if expr2 = (f x2 y2) then
     d'(expr1, x2) o d'(expr1, y2)
-  else d(expr1, expr2)
+  else d(expr1, expr2) # If the definition of d is itself recursive, replace all recursive references to d with d' as well
 ```
 
 Then, a natural question to ask is when this extension preserves the consistency of the heuristic with the distance metric. If we assume h is consistent with d, the demonstration that h' is consistent with d' follows via induction from the demonstration that for all expressions x and y, assuming that if h' is consistent for x and y, i.e. for all z `h'(x) ≤ d'(x, z) + h'(z)` and `h'(y) ≤ d'(y, z) + h'(z)`, h' is also consistent for (f x y).
@@ -42,4 +42,8 @@ It is even simpler to demonstrate this for implication, where o is defined such 
 However, such a demonstration for conjunction, and its corresponding operation of addition, is more difficult, if at all possible. From the assumptions of consistency for x and y we have `h'(x and y, z) = h'(x, z) + h'(y, z) ≤ d'(x, z) + h'(z) + d'(y, z) + h'(z) = d'(x and y, z) + 2 h'(z) ≠ d'(x and y, z) + h'(z)`. 
 For the special case of z itself being a conjunction we can still prove consistency: `|h'(x1 and y1) - h'(x2 and y2)| = |h'(x1) + h'(y1) - h'(x2) - h'(y2)| = |(h'(x1) - h'(x2)) + (h'(x2) - h'(y2))| = |(h'(x1) - h'(y2)) + (h'(y1) - h'(x2))|`. 
 By assumption, for all z `|h'(x) - h'(z)| ≤ d'(x, z)`, and similarly for y. Then if `d'(x1, x2) + d'(y1, y2) ≤ d'(x1, y2) + d'(x2, y1)`, `|(h'(x1) - h'(x2)) + (h'(x2) - h'(y2))| ≤ |h'(x1) - h'(x2)| + |h'(x2) - h'(y2)| ≤ d'(x1, x2) + d'(y1, y2) = d'(x1 and y1, x2 and y2)`, and otherwise, `|(h'(x1) - h'(y2)) + (h'(y1) - h'(x2))| ≤ |h'(x1) - h'(y2)| + |h'(x2) - h'(y1)| ≤ d'(x1, x2) + d'(y1, y2) = d'(x1 and y1, x2 and y2)`, so in either case, h' is consistent.
-For the general case, we can only show that h' is admissible, which follows from the aforementioned inequality `h'(x and y, z) ≤ d'(x and y, z) + 2 h'(z)` for all z satisfying h'(z) = 0. Then we may make the heuristic consistent by replacing the sum with an average, but that would contradict the associativity of and.
+For the general case, we can only show that h' is admissible, which follows from the aforementioned inequality `h'(x and y, z) ≤ d'(x and y, z) + 2 h'(z)` for all z satisfying h'(z) = 0. Then we may make the heuristic consistent by replacing the sum with an average, but that would contradict the associativity of and. We may use the pathmax equation to convert the heuristic into a consistent one, or we may restrict the domain of transformations on conjunctions to either literal Booleans or other conjunctions, in which case the heuristic will be consistent.
+
+Or we may use another operation altogether to represent the cost of a conjunction, such as max, chosen so that it will complement min the same way conjunction complements disjunction in Boolean algebras. The heuristic and distance measure corresponding to such an operation, though difficult to make sense of from the perspective of measuring the cost of a proof, exhibit favorable properties in relation to consistency.
+Given expressions x and y, assuming h' is consistent with d' for x and y and assuming wlog that `h'(x) ≥ h'(y)`, for all expressions z that are not conjunctions we have `h'(x and y) = max(h'(x), h'(y)) = h'(x) ≤ d'(x, z) + h'(z) ≤ max(d'(x, z), d'(y, z)) + h'(z) = d'(x and y, z) + h'(z)`. 
+For the special case of z itself being a conjunction, say t and u, for `d'(x and y, t and u) + h'(t and u) = min(max(d'(x, t), d'(y, u)), max(d'(x, u), d'(y, t))) + max(h'(t), h'(u))`

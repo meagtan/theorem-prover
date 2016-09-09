@@ -12,7 +12,7 @@ def estimate_cost(expr):
         if expr[0] == '=':
             return distance(expr[1], expr[2])
     # The number of variables, deep length - 1 and depth are all consistent heuristics. Which of their linear combinations are?
-    pass
+    return len(variables(expr))
 
 # TODO memoize this and distinguish variables from literals
 def distance(expr1, expr2):
