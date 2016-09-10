@@ -52,3 +52,4 @@ For the special case of z itself being a conjunction, say t and u, for `d'(x and
 
 - Generalize the application semantics of each rule formed by a given predicate, from this ad hoc implementation that separates equality and implies.
 - Conjunctions and disjunctions also have nontrivial application semantics. If p and q transforms x into y and z respectively, (and p q) should transform x into either y or z, and (or p q) should transform it into (or y z) if y and z are predicates, and (or (= x y) (= x z)) otherwise.
+- Verify the triangle inequality for extensions of the distance measure and define the heuristic as the distance to True, or to any literal.
