@@ -47,3 +47,8 @@ For the general case, we can only show that h' is admissible, which follows from
 Or we may use another operation altogether to represent the cost of a conjunction, such as max, chosen so that it will complement min the same way conjunction complements disjunction in Boolean algebras. The heuristic and distance measure corresponding to such an operation, though difficult to make sense of from the perspective of measuring the cost of a proof, exhibit favorable properties in relation to consistency.
 Given expressions x and y, assuming h' is consistent with d' for x and y and assuming wlog that `h'(x) ≥ h'(y)`, for all expressions z that are not conjunctions we have `h'(x and y) = max(h'(x), h'(y)) = h'(x) ≤ d'(x, z) + h'(z) ≤ max(d'(x, z), d'(y, z)) + h'(z) = d'(x and y, z) + h'(z)`. 
 For the special case of z itself being a conjunction, say t and u, for `d'(x and y, t and u) + h'(t and u) = min(max(d'(x, t), d'(y, u)), max(d'(x, u), d'(y, t))) + max(h'(t), h'(u))`
+
+## To do, notes
+
+- Generalize the application semantics of each rule formed by a given predicate, from this ad hoc implementation that separates equality and implies.
+- Conjunctions and disjunctions also have nontrivial application semantics. If p and q transforms x into y and z respectively, (and p q) should transform x into either y or z, and (or p q) should transform it into (or y z) if y and z are predicates, and (or (= x y) (= x z)) otherwise.
