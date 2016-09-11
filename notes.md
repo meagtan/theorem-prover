@@ -10,6 +10,7 @@ This metric allows for a number of possible choices of consistent heuristics, su
 - The deep length of an expression (minus one), i.e. the number of literals in the expression, which is consistent as at least n elementary edits, namely applications, are required to increase or decrease the deep length of an expression by n;
 - The number of free variables in the expression, which is always less than or equal to the deep length;
 - The maximum depth of the expression, which is consistent with the edit distance since each increment in depth requires at least one application, and each decrement at least one removal. Here we assume (f x y) = ((f x) y) has depth 1, whereas (f (x y)) has depth 2, as the former is still one function application but the latter requires 2.
+The first choice, in fact, represents the distance of the expression to a literal, more specifically its topmost literal, and as such should be especially compatible with the distance metric.
 
 ### Modifying the distance and heuristic based on the content of expressions
 
@@ -18,7 +19,7 @@ If the edit distance and heuristic are supposed to measure the approximate cost 
 - The cost of a disjunction is the minimum of the costs of its disjuncts, as it is only necessary to prove one disjunct to prove the entire disjunction.
 - The cost of an implication is less than or equal to the cost of its consequent, as its proof requires the proof of its consequent assuming the truth of its antecedent.
 
-We may generalize this notion by allowing the distance and heuristic to apply for the application of particular functions a particular associative binary operation on the distance/cost of each of their arguments. If the function f is associated with the operation o, we may extend the heuristic h and distance d into the heuristic h' and distance d' as in the following pseudocode:
+We may generalize this notion by allowing the distance and heuristic to apply for the application of particular functions a particular associative binary operation on the distance/cost of each of their arguments. If the function f is associated with the operation o, we may extend the heuristic h and distance d into the heuristic h' and distance d' as in the following pseudocode (if h is defined as distance to a literal or to True, there is no need to redefine it separately):
 
 ```
 h'(expr) = if expr = (f x y) then h'(x) o h'(y) else h(expr)
@@ -50,7 +51,8 @@ For the special case of z itself being a conjunction, say t and u, for `d'(x and
 
 ## To do, notes
 
-- Generalize the application semantics of each rule formed by a given predicate, from this ad hoc implementation that separates equality and implies.
+- Generalize the application semantics of each rule formed by a given predicate, from this ad hoc implementation that separates = and implies from other literals.
 - Conjunctions and disjunctions also have nontrivial application semantics. If p and q transforms x into y and z respectively, (and p q) should transform x into either y or z, and (or p q) should transform it into (or y z) if y and z are predicates, and (or (= x y) (= x z)) otherwise.
 - Verify the triangle inequality for extensions of the distance measure and define the heuristic as the distance to True, or to any literal.
-- Establish recursive relations for the distance metric, based on the fact that the moves applicable to an expression either transform each argument or add or delete arguments.
+- Establish recursive relations for the distance metric, based on the fact that the moves applicable to an expression either transform each argument or add or delete arguments. Work out exact expressions for the cost of replacing a function in an application with another, permuting arguments, etc.
+- Try strategies out in batches, first trying one set of transformations for a statement and trying another set later. Such a method can perhaps be implemented within the A* search algorithm by pushing rules paired with strategies to the priority queue, or pushing statements and strategies in alternation.

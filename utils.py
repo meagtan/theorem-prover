@@ -12,7 +12,7 @@ def estimate_cost(expr):
         if expr[0] == '=':
             return distance(expr[1], expr[2])
     # The number of variables, deep length - 1 and depth are all consistent heuristics. Which of their linear combinations are?
-    return len(variables(expr))
+    return deep_length(expr) - 1 # shortest distance to a literal
 
 # TODO memoize this and distinguish variables from literals
 def distance(expr1, expr2):
@@ -28,22 +28,25 @@ def distance(expr1, expr2):
     def list_distance(expr1, expr2):
         'Implementation of the Wagner-Fischer algorithm for the extended tree edit distance.'
         m, n = len(expr1), len(expr2)
-        d = {}
+        d = {} # stores shortest paths of edits between subexpressions
+        l = {} # stores deep length of each subexpression of expr1 and expr2
         
         for i in xrange(m):
+            l[1, i] = deep_length(expr1[i])
             d[i, 0] = distance(expr1[i], expr2[0])
         for j in xrange(n):
+            l[2, j] = deep_length(expr2[j])
             d[0, j] = distance(expr1[0], expr2[j])
         
         for j in xrange(1, n):
             for i in xrange(1, m):
                 if expr1[i] == expr2[j]:
-                    d[i, j] = d[i - 1, j - 1]
+                    d[i, j] = d[i-1, j-1]
                 else:
-                    d[i, j] = min(d[i - 1, j]     + deep_length(expr1[i]),        # delete expr1[i]
-                                  d[i,     j - 1] + deep_length(expr2[j]),        # insert expr2[j]
-                                  d[i - 1, j - 1] + distance(expr1[i], expr2[j])) # substitute expr2[j] for expr1[i]
-        return d[m - 1, n - 1]
+                    d[i, j] = min(d[i-1, j]   + l[1, i],                      # delete expr1[i]
+                                  d[i,   j-1] + l[2, j],                      # insert expr2[j]
+                                  d[i-1, j-1] + distance(expr1[i], expr2[j])) # substitute expr2[j] for expr1[i]
+        return d[m-1, n-1]
             
     # If both arguments are lists, they are compared by the usual Levenshtein distance, except the cost of deletion or insertion
     #  is equal to the deep length of the item deleted and the cost of substitution is the distance of the elements substituted.
@@ -55,9 +58,9 @@ def distance(expr1, expr2):
             return sum(distance(e, expr2) for e in expr1[1:])
         if expr2[0] == 'and':
             return sum(distance(expr1, e) for e in expr2[1:])
-        if expr1[0] == 'or' or expr1[0] == 'implies':
+        if expr1[0] == 'or':
             return min(distance(e, expr2) for e in expr1[1:])
-        if expr2[0] == 'or' or expr2[0] == 'implies':
+        if expr2[0] == 'or':
             return min(distance(expr1, e) for e in expr2[1:])
         # quick solution: only check consequent in implication
         if expr1[0] == 'implies':
@@ -76,8 +79,10 @@ def distance(expr1, expr2):
 ## Auxiliary utilities
 
 # by convention, variables are capital letters
-rules = [('=', 'X', 'X'), 
+rules = [True,
+         ('=', 'X', 'X'), 
          ('=', ('=', 'X', 'Y'), ('=', 'Y', 'X')),
+         ('implies', ('=', 'P', 'Q'), ('implies', 'P', 'Q')), # should this be necessary?
          ('implies', ('and', ('=', 'X', 'Y'), ('=', 'Y', 'Z')),
                      ('=', 'X', 'Z')),
          ('=', ('=', ('s', 'M'), ('s', 'N')),

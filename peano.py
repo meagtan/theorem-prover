@@ -55,22 +55,22 @@ def prove(stmt, epsilon = 1):
             return True, path.reverse()
         
         for rule, next_stmt in applicable_rules(current):
-            new_dist = dists[current] + distance(current, next_stmt)
-            if next_stmt not in dists or new_dist < dists[next_stmt]:
-                preds[next_stmt] = rule, current
-                dists[next_stmt] = new_dist
-                heappush(to_visit, (new_dist + epsilon * estimate_cost(next_stmt), next_stmt))
+            if next_stmt != current: # quick hack, should instead be in applicable_rules
+                new_dist = dists[current] + distance(current, next_stmt)
+                if next_stmt not in dists or new_dist < dists[next_stmt]:
+                    preds[next_stmt] = rule, current
+                    dists[next_stmt] = new_dist
+                    heappush(to_visit, (new_dist + epsilon * estimate_cost(next_stmt), next_stmt))
     
     return None
 
-# TODO only yield when result is different from statement
+# streamline and generalize these references to specific predicates
 def applicable_rules(stmt):
     'Generate new statements that can be derived from stmt by the application of a rule.'
     global rules
     global predicates
     
     # if there is a rule that stmt matches (also consider conjunctions), yield that and True
-    # TODO should also consider p implies q when p = q is a rule
     for rule in rules:
         if matches(rule, stmt):
             yield rule, True
