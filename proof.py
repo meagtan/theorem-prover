@@ -71,7 +71,7 @@ def applicable_rules(stmt, typ = True):
     
     # if there is a rule that stmt matches (also consider conjunctions), yield that and True
     for rule in rules:
-        if matches(rule, stmt):
+        if matches(rule, stmt, typ):
             yield rule, True
             return
     
