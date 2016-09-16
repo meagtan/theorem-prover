@@ -65,7 +65,7 @@ def prove(stmt, epsilon = 1):
     return None
 
 # streamline and generalize these references to specific predicates
-def applicable_rules(stmt):
+def applicable_rules(stmt, typ = True):
     'Generate new statements that can be derived from stmt by the application of a rule.'
     global rules
     
@@ -78,16 +78,16 @@ def applicable_rules(stmt):
     for rule in rules:
         # if rule is an equation, check if either side matches stmt
         if isinstance(rule, tuple) and rule[0] == '=':
-            binds = matches(rule[1], stmt)
+            binds = matches(rule[1], stmt, typ)
             if binds:
                 yield rule, evaluate(rule[2], binds)
-            binds = matches(rule[2], stmt)
+            binds = matches(rule[2], stmt, typ)
             if binds:
                 yield rule, evaluate(rule[1], binds)
         
         # if rule is an implication, check if the consequent matches stmt
         if isinstance(rule, tuple) and rule[0] == 'implies':
-            binds = matches(rule[2], stmt)
+            binds = matches(rule[2], stmt, typ)
             if binds:
                 yield rule, evaluate(rule[1], binds)
     
@@ -97,7 +97,7 @@ def applicable_rules(stmt):
         # the antecedent can be made to apply to the consequent, but that doesn't affix the binding of its variables
         if stmt[0] != 'implies':
             for i in xrange(1, len(stmt)):
-                for rule, res in applicable_rules(stmt[i]):
+                for rule, res in applicable_rules(stmt[i], types[stmt[0]][i]):
                     yield rule, stmt[:i] + (res,) + stmt[i+1:] # here check for True arguments in conjunction
         
         # then apply induction to each variable for predicates
