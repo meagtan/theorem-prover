@@ -101,14 +101,13 @@ literals = [True, False, 'and', 'or', 'implies', '=', 0, 's', '+', '*']
 predicates = ['and', 'or', '=', 'implies']
 types = {True : 'Bool', False : 'Bool',
          'and' : ('Bool', 'Bool', 'Bool'), 'or' : ('Bool', 'Bool', 'Bool'), 'implies' : ('Bool', 'Bool', 'Bool'),
-         '=' : ('Bool', True, True),
+         '=' : ('Bool', True, True), # TODO later modify this using type variables
          0 : 'Nat', 's' : ('Nat', 'Nat'), '+' : ('Nat', 'Nat', 'Nat'), '*' : ('Nat', 'Nat', 'Nat')}
 
 def is_variable(expr):
     return isinstance(expr, str) and expr[0].isupper()
 
 def variables(expr):
-    global literals
     res = []
     stack = [expr]
     
@@ -122,6 +121,7 @@ def variables(expr):
     res.reverse()
     return res
 
+# later infer this from type constructors
 def induct(stmt, var):
     'Convert statement into conjunction by inducting on variable.'
     return ('and', evaluate(stmt, {var : 0}), 
@@ -130,31 +130,37 @@ def induct(stmt, var):
 # TODO also allow for lazy expansion, e.g. 1 matches (s 0)
 def matches(expr1, expr2, binds = None):
     'Check if expr1 subsumes expr2, and if so return dictionary of bindings.'
-    global literals
     if binds is None:
         binds = {}
-    stack = [(expr1, expr2)]
+    stack = [(expr1, expr2, True)]
+    vartypes = {}
     
     while stack:
-        expr1, expr2 = stack.pop()
-        if expr1 in literals and expr1 != expr2:
-                return False
+        expr1, expr2, typ = stack.pop()
+        if expr1 in literals and (expr1 != expr2 or types[expr1] != typ or types[expr2] != typ):
+            return False
         if is_variable(expr1):
+            # if expr1 is not assigned a type or is assigned an incompatible type
+            if expr1 not in vartypes:
+                vartypes[expr1] = typ
+            elif not subsumes(typ, vartypes[expr1]):
+                return False
+            
+            # here check for variable types
             if expr1 not in binds:
-                if expr1 != expr2:
+                if expr1 != expr2 and subsumes(vartypes[expr1], get_type(expr2)):
                     binds[expr1] = expr2
             elif binds[expr1] != expr2:
                 return False
         if isinstance(expr1, tuple):
             if not isinstance(expr2, tuple) or len(expr1) != len(expr2):
                 return False
-            stack += zip(expr1, expr2)
+            stack += zip(expr1, expr2, types[expr1[0]])
     
     return binds
 
 def evaluate(expr, binds = None):
     "Evaluate expr using the given bindings for variables, assumed to be valid."
-    global literals
     if binds is None:
         binds = {}
     
@@ -191,3 +197,10 @@ def flatten(expr):
 def subsumes(type1, type2):
     'Return true if type2 is contained in type1.'
     return type1 is True or type1 == type2
+
+def get_type(expr):
+    'Return the type a literal value or application is supposed to have, without verifying.'
+    try:
+        return types[expr[0]][0] if isinstance(expr, tuple) else types[expr]
+    except KeyError:
+        return False
