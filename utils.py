@@ -98,11 +98,16 @@ rules = [True,
          ('=', ('*', ('s', 'M'), 'N'),
                ('+', 'N', ('*', 'M', 'N')))]
 literals = [True, False, 'and', 'or', 'implies', '=', 0, 's', '+', '*']
-predicates = ['and', 'or', '=', 'implies']
 types = {True : 'Bool', False : 'Bool',
          'and' : ('Bool', 'Bool', 'Bool'), 'or' : ('Bool', 'Bool', 'Bool'), 'implies' : ('Bool', 'Bool', 'Bool'),
          '=' : ('Bool', True, True), # TODO later modify this using type variables
          0 : 'Nat', 's' : ('Nat', 'Nat'), '+' : ('Nat', 'Nat', 'Nat'), '*' : ('Nat', 'Nat', 'Nat')}
+
+def predicates():
+    'Generate each function that returns a Boolean.'
+    for lit, typ in types:
+        if isinstance(typ, tuple) and typ[0] == 'Bool':
+            yield lit
 
 def is_variable(expr):
     return isinstance(expr, str) and expr[0].isupper()
