@@ -133,11 +133,10 @@ def induct(stmt, var):
                    ('implies', stmt, evaluate(stmt, {var : ('s', var)})))
 
 # TODO also allow for lazy expansion, e.g. 1 matches (s 0)
-def matches(expr1, expr2, binds = None):
+def matches(expr1, expr2, typ = True):
     'Check if expr1 subsumes expr2, assuming neither are badly typed, and if so return dictionary of bindings.'
-    if binds is None:
-        binds = {}
-    stack = [(expr1, expr2, True)] # check if expr1 matches expr2 and is constrained to type True
+    binds = {}
+    stack = [(expr1, expr2, typ)] # check if expr1 matches expr2 and is constrained to type True
     vartypes = {} # types each variable is constrained to
     
     while stack:
