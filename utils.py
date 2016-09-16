@@ -99,7 +99,10 @@ rules = [True,
                ('+', 'N', ('*', 'M', 'N')))]
 literals = [True, False, 'and', 'or', 'implies', '=', 0, 's', '+', '*']
 predicates = ['and', 'or', '=', 'implies']
-# TODO assign types to literals and variables
+types = {True : 'Bool', False : 'Bool',
+         'and' : ('Bool', 'Bool', 'Bool'), 'or' : ('Bool', 'Bool', 'Bool'), 'implies' : ('Bool', 'Bool', 'Bool'),
+         '=' : ('Bool', True, True),
+         0 : 'Nat', 's' : ('Nat', 'Nat'), '+' : ('Nat', 'Nat', 'Nat'), '*' : ('Nat', 'Nat', 'Nat')}
 
 def is_variable(expr):
     return isinstance(expr, str) and expr[0].isupper()
