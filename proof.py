@@ -68,7 +68,6 @@ def prove(stmt, epsilon = 1):
 def applicable_rules(stmt):
     'Generate new statements that can be derived from stmt by the application of a rule.'
     global rules
-    global predicates
     
     # if there is a rule that stmt matches (also consider conjunctions), yield that and True
     for rule in rules:
@@ -102,6 +101,6 @@ def applicable_rules(stmt):
                     yield rule, stmt[:i] + (res,) + stmt[i+1:] # here check for True arguments in conjunction
         
         # then apply induction to each variable for predicates
-        if stmt[0] in predicates:
+        if stmt[0] in predicates():
             for var in variables(stmt):
                 yield var, induct(stmt, var)
