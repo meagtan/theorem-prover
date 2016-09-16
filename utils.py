@@ -134,33 +134,37 @@ def induct(stmt, var):
 
 # TODO also allow for lazy expansion, e.g. 1 matches (s 0)
 def matches(expr1, expr2, binds = None):
-    'Check if expr1 subsumes expr2, and if so return dictionary of bindings.'
+    'Check if expr1 subsumes expr2, assuming neither are badly typed, and if so return dictionary of bindings.'
     if binds is None:
         binds = {}
-    stack = [(expr1, expr2, True)]
-    vartypes = {}
+    stack = [(expr1, expr2, True)] # check if expr1 matches expr2 and is constrained to type True
+    vartypes = {} # types each variable is constrained to
     
     while stack:
         expr1, expr2, typ = stack.pop()
-        if expr1 in literals and (expr1 != expr2 or types[expr1] != typ or types[expr2] != typ):
+        
+        # if the lhs is a literal, the rhs must be the same literal and both must match the type they are constrained to
+        if expr1 in literals and not (expr1 == expr2 and subsumes(typ, types[expr1])):
             return False
+        
         if is_variable(expr1):
             # if expr1 is not assigned a type or is assigned an incompatible type
-            if expr1 not in vartypes:
+            if expr1 not in vartypes or expr1 not in binds and subsumes(vartypes[expr1], typ): # expr1 is constrained further to typ
                 vartypes[expr1] = typ
-            elif not subsumes(typ, vartypes[expr1]):
+            elif not subsumes(typ, vartypes[expr1]): # typ doesn't contain expr1
                 return False
             
-            # here check for variable types
             if expr1 not in binds:
                 if expr1 != expr2 and subsumes(vartypes[expr1], get_type(expr2)):
                     binds[expr1] = expr2
             elif binds[expr1] != expr2:
                 return False
+        
         if isinstance(expr1, tuple):
-            if not isinstance(expr2, tuple) or len(expr1) != len(expr2):
+            if not isinstance(expr2, tuple) or len(expr1) != len(expr2): # mismatched arguments
                 return False
-            stack += zip(expr1, expr2, types[expr1[0]])
+            # bind each pair of arguments to the types they are constrained to based on the type of expr1[0]
+            stack += zip(expr1, expr2, (types[expr1[0]],) + types[expr1[0]][1:])
     
     return binds
 
