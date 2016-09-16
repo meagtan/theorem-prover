@@ -127,7 +127,7 @@ def induct(stmt, var):
     return ('and', evaluate(stmt, {var : 0}), 
                    ('implies', stmt, evaluate(stmt, {var : ('s', var)})))
 
-# also allow for lazy expansion, e.g. 1 matches (s 0)
+# TODO also allow for lazy expansion, e.g. 1 matches (s 0)
 def matches(expr1, expr2, binds = None):
     'Check if expr1 subsumes expr2, and if so return dictionary of bindings.'
     global literals
@@ -186,3 +186,8 @@ def flatten(expr):
     
     res.reverse()
     return res
+
+# TODO include inheritance later
+def subsumes(type1, type2):
+    'Return true if type2 is contained in type1.'
+    return type1 is True or type1 == type2
