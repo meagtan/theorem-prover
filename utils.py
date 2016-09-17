@@ -27,8 +27,8 @@ types = {True : 'Bool', False : 'Bool',
 
 def predicates():
     'Generate each function that returns a Boolean.'
-    for lit, typ in types:
-        if isinstance(typ, tuple) and typ[0] == 'Bool':
+    for lit in types:
+        if isinstance(types[lit], tuple) and types[lit][0] == 'Bool':
             yield lit
 
 def is_variable(expr):
