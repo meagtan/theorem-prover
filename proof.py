@@ -4,7 +4,7 @@
 # A statement is proven by a series of transformations that ends in the literal True.
 # For example, the proof that addition, defined as in the Peano axioms, is associative, is rpresented by these transformations:
 # - ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')) # statement of hypothesis
-# - ('and', ('=', ('+', 0, ('+', 'N', 'K')), ('+', ('+', 0, 'N'), 'K')),
+# - ('and', ('=', ('+', '0', ('+', 'N', 'K')), ('+', ('+', '0', 'N'), 'K')),
 #           ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')),
 #                       ('=', ('+', ('s', 'M'), ('+', 'N', 'K')), ('+', ('+', ('s', 'M'), 'N'), 'K')))) # induction on M
 # - ('and', ('=', ('+', 'N', 'K'), ('+', 'N', 'K')),
