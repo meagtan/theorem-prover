@@ -70,7 +70,7 @@ def matches(expr1, expr2, typ = True):
         
         if is_variable(expr1):
             # if expr1 is not assigned a type or is assigned an incompatible type
-            if expr1 not in vartypes or expr1 not in binds and subsumes(vartypes[expr1], typ): # expr1 is constrained further to typ
+            if expr1 not in vartypes or subsumes(vartypes[expr1], typ): # expr1 is constrained further to typ
                 vartypes[expr1] = typ
             elif not subsumes(typ, vartypes[expr1]): # typ doesn't contain expr1
                 return False
