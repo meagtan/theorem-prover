@@ -13,22 +13,21 @@ rules = [True,
          ('implies', 'P', True),
          ('implies', False, 'P'),
          ('implies', 'P', 'P'),
-         ('=', ('+', 0, 'N'), 'N'),
+         ('=', ('+', '0', 'N'), 'N'),
          ('=', ('+', ('s', 'M'), 'N'),
                ('s', ('+', 'M', 'N'))),
-         ('=', ('*', 0, 'N'), 0),
+         ('=', ('*', '0', 'N'), '0'),
          ('=', ('*', ('s', 'M'), 'N'),
                ('+', 'N', ('*', 'M', 'N')))]
-literals = [True, False, 'and', 'or', 'implies', '=', 0, 's', '+', '*']
-types = {True : 'Bool', False : 'Bool',
-         'and' : ('Bool', 'Bool', 'Bool'), 'or' : ('Bool', 'Bool', 'Bool'), 'implies' : ('Bool', 'Bool', 'Bool'),
-         '=' : ('Bool', True, True), # TODO later modify this using type variables
-         0 : 'Nat', 's' : ('Nat', 'Nat'), '+' : ('Nat', 'Nat', 'Nat'), '*' : ('Nat', 'Nat', 'Nat')}
+literals = {True : 'Bool', False : 'Bool',
+            'and' : ('Bool', 'Bool', 'Bool'), 'or' : ('Bool', 'Bool', 'Bool'), 'implies' : ('Bool', 'Bool', 'Bool'),
+            '=' : ('Bool', True, True), # TODO later modify this using type variables
+            '0' : 'Nat', 's' : ('Nat', 'Nat'), '+' : ('Nat', 'Nat', 'Nat'), '*' : ('Nat', 'Nat', 'Nat')}
 
 def predicates():
     'Generate each function that returns a Boolean.'
-    for lit in types:
-        if isinstance(types[lit], tuple) and types[lit][0] == 'Bool':
+    for lit in literals:
+        if isinstance(literals[lit], tuple) and literals[lit][0] == 'Bool':
             yield lit
 
 def is_variable(expr):
@@ -51,7 +50,7 @@ def variables(expr):
 # later infer this from type constructors
 def induct(stmt, var):
     'Convert statement into conjunction by inducting on variable.'
-    return ('and', evaluate(stmt, {var : 0}), 
+    return ('and', evaluate(stmt, {var : '0'}), 
                    ('implies', stmt, evaluate(stmt, {var : ('s', var)})))
 
 # TODO also allow for lazy expansion, e.g. 1 matches (s 0)
@@ -65,7 +64,7 @@ def matches(expr1, expr2, typ = True):
         expr1, expr2, typ = stack.pop()
         
         # if the lhs is a literal, the rhs must be the same literal and both must match the type they are constrained to
-        if expr1 in literals and not (expr1 == expr2 and subsumes(typ, types[expr1])):
+        if expr1 in literals and not (expr1 == expr2 and subsumes(typ, literals[expr1])):
             return False
         
         if is_variable(expr1):
@@ -84,8 +83,8 @@ def matches(expr1, expr2, typ = True):
         if isinstance(expr1, tuple):
             if not isinstance(expr2, tuple) or len(expr1) != len(expr2): # mismatched arguments
                 return False
-            # bind each pair of arguments to the types they are constrained to based on the type of expr1[0]
-            stack += zip(expr1, expr2, (types[expr1[0]],) + types[expr1[0]][1:])
+            # bind each pair of arguments to the literals they are constrained to based on the type of expr1[0]
+            stack += zip(expr1, expr2, (literals[expr1[0]],) + literals[expr1[0]][1:])
     
     return binds
 
@@ -131,6 +130,6 @@ def subsumes(type1, type2):
 def get_type(expr):
     'Return the type a literal value or application is supposed to have, without verifying.'
     try:
-        return types[expr[0]][0] if isinstance(expr, tuple) else types[expr]
+        return literals[expr[0]][0] if isinstance(expr, tuple) else literals[expr]
     except KeyError:
         return False
