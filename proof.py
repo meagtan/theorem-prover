@@ -86,7 +86,7 @@ def applicable_rules(stmt, typ = True):
                 yield rule, evaluate(rule[1], binds)
         
         # if rule is an implication, check if the consequent matches stmt
-        if isinstance(rule, tuple) and rule[0] == 'implies':
+        if isinstance(rule, tuple) and rule[0] == 'implies' and get_type(stmt) == typ == 'Bool':
             binds = matches(rule[2], stmt, typ)
             if binds:
                 yield rule, evaluate(rule[1], binds)
