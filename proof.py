@@ -25,12 +25,13 @@ from utils import *
 
 ## Proof algorithm
 
-def prove(stmt, epsilon = 1, estims = {}): # estims memoizes and optimizes heuristics
+def prove(stmt, epsilon = 1, estims = {}): # estims memoizes heuristics and updates them through landmarks
     'Search a proof or disproof for statement in environment using heuristic search.'
     to_visit = []
     preds = {} # This map and the one below could be implemented as a trie
     dists = {}
     dists[stmt] = 0
+    estims[stmt] = estimate_cost(stmt)
     
     hp.heappush(to_visit, (0, stmt))
     
@@ -38,7 +39,7 @@ def prove(stmt, epsilon = 1, estims = {}): # estims memoizes and optimizes heuri
     while to_visit: 
         current = hp.heappop(to_visit)[1]
         
-        # current already visited
+        # current already visited or dead end
         if current in preds.values() or current is False:
             continue
         
@@ -46,6 +47,13 @@ def prove(stmt, epsilon = 1, estims = {}): # estims memoizes and optimizes heuri
         # for every rule in env, applicable_rules generates an evaluation rule converting that rule to true
         if current is True:
             rules.append(stmt)
+            
+            # update estims with stmt as landmark using the triangle inequality
+            for node in dists:
+                # each node in dists is also in estims, since they are both defined when node is first added to the heap
+                estims[node] = max(estims[node], dists[current] - dists[node])
+            
+            # construct path
             path = []
             while current in preds:
                 path.append((preds[current][0], current))
@@ -59,7 +67,9 @@ def prove(stmt, epsilon = 1, estims = {}): # estims memoizes and optimizes heuri
                 if next_stmt not in dists or new_dist < dists[next_stmt]:
                     preds[next_stmt] = rule, current
                     dists[next_stmt] = new_dist
-                    hp.heappush(to_visit, (new_dist + epsilon * estimate_cost(next_stmt), next_stmt))
+                    if next_stmt not in estims:
+                        estims[next_stmt] = estimate_cost(next_stmt)
+                    hp.heappush(to_visit, (new_dist + epsilon * estims[next_stmt], next_stmt))
     
     return None
 
