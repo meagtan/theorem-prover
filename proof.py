@@ -20,31 +20,30 @@
 # - ('and', True, True) # truth of implication
 # - True # truth of conjunction
 
-import heapq
+import heapq as hp
 from utils import *
 
 ## Proof algorithm
 
-def prove(stmt, epsilon = 1):
+def prove(stmt, epsilon = 1, estims = {}): # estims memoizes and optimizes heuristics
     'Search a proof or disproof for statement in environment using heuristic search.'
-    to_visit  = []
+    to_visit = []
     preds = {} # This map and the one below could be implemented as a trie
     dists = {}
     dists[stmt] = 0
     
-    heappush(to_visit, (0, stmt))
+    hp.heappush(to_visit, (0, stmt))
     
     # This loop might not terminate for axiomatic systems complex enough, add conditions
     while to_visit: 
-        current = heappop(to_visit)[1]
+        current = hp.heappop(to_visit)[1]
         
         # current already visited
         if current in preds.values() or current is False:
             continue
         
         # found conclusion, end search and construct proof from preds
-        # for every rule in env, applicable_rules generates an evaluation rule converting
-        #  that rule to true
+        # for every rule in env, applicable_rules generates an evaluation rule converting that rule to true
         if current is True:
             rules.append(stmt)
             path = []
@@ -60,7 +59,7 @@ def prove(stmt, epsilon = 1):
                 if next_stmt not in dists or new_dist < dists[next_stmt]:
                     preds[next_stmt] = rule, current
                     dists[next_stmt] = new_dist
-                    heappush(to_visit, (new_dist + epsilon * estimate_cost(next_stmt), next_stmt))
+                    hp.heappush(to_visit, (new_dist + epsilon * estimate_cost(next_stmt), next_stmt))
     
     return None
 
@@ -86,7 +85,7 @@ def applicable_rules(stmt, typ = True):
                 yield rule, evaluate(rule[1], binds)
         
         # if rule is an implication, check if the consequent matches stmt
-        if isinstance(rule, tuple) and rule[0] == 'implies' and get_type(stmt) == typ == 'Bool':
+        if isinstance(rule, tuple) and rule[0] == 'implies' and get_type(stmt) == typ == 'Bool': # get_type('implies')[1]
             binds = matches(rule[2], stmt, typ)
             if binds:
                 yield rule, evaluate(rule[1], binds)
