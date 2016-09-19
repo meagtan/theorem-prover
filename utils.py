@@ -57,7 +57,7 @@ def induct(stmt, var):
 def matches(expr1, expr2, typ = True):
     'Check if expr1 subsumes expr2, assuming neither are badly typed, and if so return dictionary of bindings.'
     binds = {}
-    stack = [(expr1, expr2, typ)] # check if expr1 matches expr2 and is constrained to type True
+    stack = [(expr1, expr2, typ)] # check if expr1 matches expr2 and is constrained to typ
     vartypes = {} # types each variable is constrained to
     
     while stack:
@@ -74,8 +74,12 @@ def matches(expr1, expr2, typ = True):
             elif not subsumes(typ, vartypes[expr1]): # typ doesn't contain expr1
                 return False
             
+            # if expr1 cannot be matched to expr2
+            if not is_variable(expr2) and not subsumes(vartypes[expr1], get_type(expr2)):
+                return False
+            
             if expr1 not in binds:
-                if expr1 != expr2 and subsumes(vartypes[expr1], get_type(expr2)):
+                if expr1 != expr2:
                     binds[expr1] = expr2
             elif binds[expr1] != expr2:
                 return False
@@ -125,7 +129,7 @@ def flatten(expr):
 # TODO include inheritance later
 def subsumes(type1, type2):
     'Return true if type2 is contained in type1.'
-    return type1 is True or type1 == type2
+    return type1 is True or type1 == type2 or type2
 
 def get_type(expr):
     'Return the type a literal value or application is supposed to have, without verifying.'
