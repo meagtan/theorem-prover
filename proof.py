@@ -88,16 +88,16 @@ def applicable_rules(stmt, typ = True):
         # if rule is an equation, check if either side matches stmt
         if isinstance(rule, tuple) and rule[0] == '=':
             binds = matches(rule[1], stmt, typ)
-            if binds:
+            if binds is not False: # matches can also return {}
                 yield rule, evaluate(rule[2], binds)
             binds = matches(rule[2], stmt, typ)
-            if binds:
+            if binds is not False:
                 yield rule, evaluate(rule[1], binds)
         
         # if rule is an implication, check if the consequent matches stmt
         if isinstance(rule, tuple) and rule[0] == 'implies' and get_type(stmt) == typ == 'Bool': # get_type('implies')[1]
             binds = matches(rule[2], stmt, typ)
-            if binds:
+            if binds is not False:
                 yield rule, evaluate(rule[1], binds)
     
     # also look for substitutions on each subexpression of stmt
