@@ -1,25 +1,5 @@
 ### Theorem proving on the Peano axioms
 
-# The theorem proving algorithm operates on expressions comprised of literals and universally quantified variables.
-# A statement is proven by a series of transformations that ends in the literal True.
-# For example, the proof that addition, defined as in the Peano axioms, is associative, is rpresented by these transformations:
-# - ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')) # statement of hypothesis
-# - ('and', ('=', ('+', '0', ('+', 'N', 'K')), ('+', ('+', '0', 'N'), 'K')),
-#           ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')),
-#                       ('=', ('+', ('s', 'M'), ('+', 'N', 'K')), ('+', ('+', ('s', 'M'), 'N'), 'K')))) # induction on M
-# - ('and', ('=', ('+', 'N', 'K'), ('+', 'N', 'K')),
-#           ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')),
-#                       ('=', ('s', ('+', 'M', ('+', 'N', 'K'))), ('s', ('+', ('+', 'M', 'N'), 'K'))))) # definitions of +
-# - ('and', True,
-#           ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')),
-#                       ('=', ('s', ('+', 'M', ('+', 'N', 'K'))), ('s', ('+', ('+', 'M', 'N'), 'K'))))) # equality
-# - ('and', True, 
-#           ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')),
-#                       ('=', ('s', ('+', 'M', ('+', 'N', 'K'))), ('s', ('+', 'M', ('+', 'N', 'K'))))) # application of antecedent
-# - ('and', True, ('implies', ('=', ('+', 'M', ('+', 'N', 'K')), ('+', ('+', 'M', 'N'), 'K')), True) # equality
-# - ('and', True, True) # truth of implication
-# - True # truth of conjunction
-
 import heapq as hp
 from utils import *
 
@@ -31,13 +11,11 @@ def prove(stmt, epsilon = 1, estims = {}):
     'Search a proof or disproof for statement in environment using heuristic search.'
     
     # Auxiliary memoization functions
-    
     def get_cost(s):
         'Return estimated cost of statement memoized.'
         if s not in estims:
             estims[s] = estimate_cost(s)
         return estims[s]
-    
     def update_cost(s, other):
         'Set new estimated cost of statement to maximum of current estimate and other estimate.'
         estims[s] = max(get_cost(s), other)
@@ -46,7 +24,7 @@ def prove(stmt, epsilon = 1, estims = {}):
     # Main algorithm
     
     to_visit = []
-    preds = {} # This map and the one below could be implemented as a trie
+    preds = {}
     dists = {}
     dists[stmt] = 0
     
@@ -103,7 +81,7 @@ def applicable_rules(stmt, typ = True):
         # if rule is an equation, check if either side matches stmt
         if isinstance(rule, tuple) and rule[0] == '=':
             binds = matches(rule[1], stmt, typ)
-            if binds is not False: # matches can also return {}
+            if binds is not False: # matches can also return {} as a valid set of bindings
                 yield rule, evaluate(rule[2], binds)
             binds = matches(rule[2], stmt, typ)
             if binds is not False:
