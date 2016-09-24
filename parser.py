@@ -30,7 +30,7 @@ def tokenize(s):
                 word = eval(word)
             tokens.append(word)
             word = ''
-        else:
+        if not c.isspace():
             word += c
         ct = chartype(c)
     tokens.append(word)
