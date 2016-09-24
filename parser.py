@@ -15,16 +15,24 @@ def functions():
 
 def tokenize(s):
     'Split string representing an expression into tokens.'
+    def chartype(c):
+        if c.isalpha():
+            return 0
+        if c.isdigit():
+            return 1
+        return 2
     tokens = []
     word = ''
+    ct = None
     for c in s:
-        if word in functions() or c.isspace():
+        if word and (word in functions() or c.isspace() or chartype(c) != ct):
             if word in ['True', 'False']:
                 word = eval(word)
             tokens.append(word)
             word = ''
         else:
             word += c
+        ct = chartype(c)
     tokens.append(word)
     return tokens
 
