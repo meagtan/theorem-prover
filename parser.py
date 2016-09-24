@@ -16,9 +16,17 @@ def functions():
 def tokenize(s):
     'Split string representing an expression into tokens.'
     tokens = []
-    word = None
+    word = ''
     for c in s:
-        pass
+        if word in functions() or c.isspace():
+            if word in ['True', 'False']:
+                word = eval(word)
+            tokens.append(word)
+            word = ''
+        else:
+            word += c
+    tokens.append(word)
+    return tokens
 
 def parse(tokens):
     'Parse list of tokens into an expression, either an atom or a tuple of expressions.'
