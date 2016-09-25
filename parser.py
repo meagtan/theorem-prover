@@ -55,7 +55,7 @@ def parse(tokens):
         except:
             return False
     for t in tokens:
-        if t in atoms():
+        if t in atoms() or is_variable(t):
             res.append(t)
         elif t in functions() or t == '(':
             ops.append(t)
