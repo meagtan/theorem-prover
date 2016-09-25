@@ -12,7 +12,7 @@ operators = ['*', '+', '=', 'implies', 'and', 'or'] # sorted by precedence
 
 # memoize this until literals is changed
 def functions():
-    return (f for f in literals if isinstance(literals[f], tuple) and f not in operators)
+    return (f for f in literals if isinstance(literals[f], tuple))
 def atoms():
     return (v for v in literals if not isinstance(literals[v], tuple))
 
@@ -48,7 +48,7 @@ def parse(tokens):
         try:
             argc = len(literals[fun]) - 1
             args = ()
-            for i in argc:
+            for i in xrange(argc):
                 args = (res.pop(),) + args
             res.append((fun,) + args)
             return True
@@ -58,11 +58,10 @@ def parse(tokens):
         if t in atoms() or is_variable(t):
             res.append(t)
         elif t in functions() or t == '(':
-            ops.append(t)
-        elif t in operators:
-            while ops and precedes(ops[-1], t):
-                if not apply_fun(ops.pop()):
-                    return None
+            if t in operators:
+                while ops and precedes(ops[-1], t):
+                    if not apply_fun(ops.pop()):
+                        return None
             ops.append(t)
         elif t == ')':
             while ops and ops[-1] != '(':
