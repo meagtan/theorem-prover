@@ -60,7 +60,7 @@ def parse(tokens):
         elif t in functions() or t == '(':
             ops.append(t)
         elif t in operators:
-            while ops and precedes(t, ops[-1]):
+            while ops and precedes(ops[-1], t):
                 if not apply_fun(ops.pop()):
                     return None
             ops.append(t)
@@ -86,6 +86,13 @@ def output(expr):
     'Convert expression into a readable string representation.'
     pass
 
+# memoize
 def precedes(op1, op2):
     'Return whether op1 has higher precedence than op2, or op1 and op2 are left-associative and the same operator.'
-    pass
+    found1 = False
+    for op in operators:
+        if op == op1:
+            found1 = True
+        if op == op2:
+            return found1
+    return False
