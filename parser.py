@@ -10,8 +10,11 @@ from utils import *
 
 operators = ['*', '+', '=', 'implies', 'and', 'or'] # sorted by precedence
 
+# memoize this until literals is changed
 def functions():
-    return (f for f in literals if isinstance(literals[f], tuple))
+    return (f for f in literals if isinstance(literals[f], tuple) and f not in operators)
+def atoms():
+    return (v for v in literals if not isinstance(literals[v], tuple))
 
 def tokenize(s):
     'Split string representing an expression into tokens.'
@@ -38,8 +41,51 @@ def tokenize(s):
 
 def parse(tokens):
     'Parse list of tokens into an expression, either an atom or a tuple of expressions.'
-    pass
+    # shunting yard algorithm, adapted for expressions
+    res = []
+    ops = []
+    def apply_fun(fun):
+        try:
+            argc = len(literals[fun]) - 1
+            args = ()
+            for i in argc:
+                args = (res.pop(),) + args
+            res.append((fun,) + args)
+            return True
+        except:
+            return False
+    for t in tokens:
+        if t in atoms():
+            res.append(t)
+        elif t in functions() or t == '(':
+            ops.append(t)
+        elif t in operators:
+            while ops and precedes(t, ops[-1]):
+                if not apply_fun(ops.pop()):
+                    return None
+            ops.append(t)
+        elif t == ')':
+            while ops and ops[-1] != '(':
+                if not apply_fun(ops.pop()):
+                    return None
+            if not ops:
+                return None
+            ops.pop()
+            if ops and ops[-1] in functions():
+                if not apply_fun(ops.pop()):
+                    return None
+    while ops:
+        if ops[-1] in ['(', ')']:
+            return None
+        apply_fun(ops.pop())
+    if len(res) != 1:
+        return None
+    return res[0]
 
 def output(expr):
     'Convert expression into a readable string representation.'
+    pass
+
+def precedes(op1, op2):
+    'Return whether op1 has higher precedence than op2, or op1 and op2 are left-associative and the same operator.'
     pass
