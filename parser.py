@@ -82,9 +82,19 @@ def parse(tokens):
         return None
     return res[0]
 
-def output(expr):
+def output(expr, parens = False):
     'Convert expression into a readable string representation.'
-    pass
+    def paren(expr, op):
+        return isinstance(expr, tuple) and precedes(expr[0], op)
+    
+    if not isinstance(expr, tuple):
+        return str(expr)
+    if expr[0] in operators:
+        res = '{0} {1} {2}'.format(output(expr[1], paren(expr[1], expr[0])), expr[0],
+                                   output(expr[2], paren(expr[2], expr[0])))
+    else:
+        res = '{0} {1} {2}'.format(expr[0], output(expr[1], True), output(expr[2], True))
+    return '({0})'.format(res) if parens else res
 
 # memoize
 def precedes(op1, op2):
