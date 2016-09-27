@@ -93,12 +93,14 @@ def output(expr, parens = False):
         res = '{0} {1} {2}'.format(output(expr[1], paren(expr[1], expr[0])), expr[0],
                                    output(expr[2], paren(expr[2], expr[0])))
     else:
-        res = ' '.join([expr[0]] + [output(e, paren(e, expr[0])) for e in expr[1:]])
+        res = ' '.join([expr[0]] + [output(e, True) for e in expr[1:]])
     return '({0})'.format(res) if parens else res
 
 # memoize
 def precedes(op1, op2):
     'Return whether op1 has higher precedence than op2, or op1 and op2 are left-associative and the same operator.'
+    if op1 in functions():
+        return True
     found1 = False
     for op in operators:
         if op == op1:
