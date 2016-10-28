@@ -12,17 +12,18 @@ rules = [True,
          ('and', True, True),
          ('implies', 'P', True),
          ('implies', False, 'P'),
-         ('implies', 'P', 'P'),
+         ('implies', 'P', 'P'), # should be proven by induction
          ('=', ('+', '0', 'N'), 'N'),
          ('=', ('+', ('s', 'M'), 'N'),
                ('s', ('+', 'M', 'N'))),
          ('=', ('*', '0', 'N'), '0'),
          ('=', ('*', ('s', 'M'), 'N'),
                ('+', 'N', ('*', 'M', 'N')))]
-literals = {True : 'Bool', False : 'Bool',
-            'and' : ('Bool', 'Bool', 'Bool'), 'or' : ('Bool', 'Bool', 'Bool'), 'implies' : ('Bool', 'Bool', 'Bool'),
-            '=' : ('Bool', True, True), # TODO later modify this using type variables
-            '0' : 'Nat', 's' : ('Nat', 'Nat'), '+' : ('Nat', 'Nat', 'Nat'), '*' : ('Nat', 'Nat', 'Nat')}
+literals = {True: 'Bool', False: 'Bool',
+            'and': ('Bool', 'Bool', 'Bool'), 'or': ('Bool', 'Bool', 'Bool'), 'implies': ('Bool', 'Bool', 'Bool'),
+            '=': ('Bool', True, True), # TODO later modify this using type variables
+            '0': 'Nat', 's': ('Nat', 'Nat'), '+': ('Nat', 'Nat', 'Nat'), '*': ('Nat', 'Nat', 'Nat')}
+types = {'Bool': (True, False), 'Nat': ('0', ('s', 'Nat'))} # type constructions which should also generate or statements
 
 def predicates():
     'Generate each function that returns a Boolean.'
@@ -31,27 +32,43 @@ def predicates():
             yield lit
 
 def is_variable(expr):
-    return isinstance(expr, str) and expr[0].isupper()
+    return isinstance(expr, str) and expr[0].isupper() and expr not in types and expr not in variables
 
+# should instead return a map matching variables to inferred types
 def variables(expr):
-    res = []
-    stack = [expr]
+    res = {}
+    stack = [(expr, get_type(expr))] # stores expression and the type it is constrained to
     
     while stack:
-        current = stack.pop()
-        if is_variable(current) and current not in res:
-            res.append(current)
+        current, typ = stack.pop()
+        if is_variable(current) and current not in res: # if it is already in, its type should be constrained further
+            res[current] = typ
         if isinstance(current, tuple):
-            stack += current
+            stack += zip(current, [literals[current[0]]] + literals[current[0]][1:])
     
     res.reverse()
     return res
 
 # later infer this from type constructors
-def induct(stmt, var):
-    'Convert statement into conjunction by inducting on variable.'
-    return ('and', evaluate(stmt, {var : '0'}), 
-                   ('implies', stmt, evaluate(stmt, {var : ('s', var)})))
+# for that, var should be assigned a type
+def induct(stmt, var, typ):
+    'Convert statement into conjunction by inducting on variable with given type.'
+    # return ('and', evaluate(stmt, {var : '0'}), 
+    #                ('implies', stmt, evaluate(stmt, {var : ('s', var)})))
+    if typ not in types or not types[typ]: # typ doesn't have constructors
+        return None
+    conjs = []
+    for constr in types[typ]:
+        if constr in literals:
+            conjs.append(evaluate(stmt, {var : constr}))
+        elif isinstance(constr, tuple):
+            # get all typenames in constr, replace them with variable names
+            # if constr contains typ, create new antecedent for implication substituting var for each variable for typ
+            pass
+        else:
+            return None
+    return tuple(['and'] + conjs)
+    
 
 # TODO also allow for lazy expansion, e.g. 1 matches (s 0)
 def matches(expr1, expr2, typ = True):
