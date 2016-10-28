@@ -104,8 +104,10 @@ def applicable_rules(stmt, typ = True):
         
         # then apply induction to each variable for predicates
         if stmt[0] in predicates():
-            for var in variables(stmt):
-                yield var, induct(stmt, var)
+            for var, typ in variables(stmt):
+                ind = induct(stmt, var, typ)
+                if ind is not None:
+                    yield var, ind
 
 ## Distance
 
