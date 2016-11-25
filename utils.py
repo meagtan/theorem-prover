@@ -32,7 +32,7 @@ def predicates():
             yield lit
 
 def is_variable(expr):
-    return isinstance(expr, str) and expr[0].isupper() and expr not in types and expr not in variables
+    return isinstance(expr, str) and expr[0].isupper() and expr not in types and expr not in literals
 
 # should instead return a map matching variables to inferred types
 def variables(expr):
