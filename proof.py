@@ -99,8 +99,11 @@ def applicable_rules(stmt, typ = True):
         # the antecedent can be made to apply to the consequent, but that doesn't affix the binding of its variables
         if stmt[0] != 'implies':
             for i in xrange(1, len(stmt)):
-                for rule, res in applicable_rules(stmt[i], types[stmt[0]][i]):
-                    yield rule, stmt[:i] + (res,) + stmt[i+1:] # here check for True arguments in conjunction
+                try:
+                    for rule, res in applicable_rules(stmt[i], literals[stmt[0]][i]):
+                        yield rule, stmt[:i] + (res,) + stmt[i+1:] # here check for True arguments in conjunction
+                except KeyError:
+                    pass
         
         # then apply induction to each variable for predicates
         if stmt[0] in predicates():
