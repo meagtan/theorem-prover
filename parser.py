@@ -2,7 +2,7 @@
 
 # Syntax:
 # <expr> ::= <atom> | <function> <whitespace> <expr> {<whitespace> <expr>} | <expr> <whitespace> <operator> <whitespace> <expr>
-# Operands are parenthesized when they are operator applications with precedence ≤ that of the operator of the expression,
+# Operands are parenthesized when they are operator applications with precedence <= that of the operator of the expression,
 #  or if the operator is associative, < that of the operator.
 # Function arguments are parenthesized if they are not atomic values, i.e. literals and variables. 
 
