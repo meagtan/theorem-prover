@@ -53,10 +53,10 @@ def prove(stmt, epsilon = 1, estims = {}):
             while current in preds:
                 path.append((preds[current][0], current))
                 current = preds[current][1]
-            path.append(expr)
-            return True, path.reverse()
+            path.append(stmt)
+            return True, reversed(path)
         
-        for rule, next_stmt in applicable_rules(current):
+        for next_stmt, rule in applicable_rules(current, 'Bool'):
             if next_stmt != current: # quick hack, should instead be in applicable_rules
                 new_dist = dists[current] + distance(current, next_stmt)
                 if next_stmt not in dists or new_dist < dists[next_stmt]:
@@ -66,11 +66,22 @@ def prove(stmt, epsilon = 1, estims = {}):
     
     return None
 
-# streamline and generalize these references to specific predicates
 def applicable_rules(stmt, typ = True):
+    'Collect applicable rules based on statement.'
+    stmts = {}
+    for rule, nstmt in applicable_rules_aux(stmt, typ):
+        if nstmt == stmt: 
+            continue
+        if nstmt not in stmts:
+            stmts[nstmt] = [rule]
+        else:
+            stmts[nstmt] += [rule]
+    return stmts.items()
+
+# streamline and generalize these references to specific predicates
+# problem with typ being true by default
+def applicable_rules_aux(stmt, typ = True): 
     'Generate new statements that can be derived from stmt by the application of a rule.'
-    global rules
-    
     # if there is a rule that stmt matches (also consider conjunctions), yield that and True
     for rule in rules:
         if matches(rule, stmt, typ):
@@ -79,6 +90,8 @@ def applicable_rules(stmt, typ = True):
     
     for rule in rules:
         # if rule is an equation, check if either side matches stmt
+        # TODO rule N = 0 + N matches stmt X = X,
+        #  need to check that binds is type compatible with rule
         if isinstance(rule, tuple) and rule[0] == '=':
             binds = matches(rule[1], stmt, typ)
             if binds is not False: # matches can also return {} as a valid set of bindings
@@ -100,17 +113,17 @@ def applicable_rules(stmt, typ = True):
         if stmt[0] != 'implies':
             for i in xrange(1, len(stmt)):
                 try:
-                    for rule, res in applicable_rules(stmt[i], literals[stmt[0]][i]):
+                    for rule, res in applicable_rules_aux(stmt[i], literals[stmt[0]][i]):
                         yield rule, stmt[:i] + (res,) + stmt[i+1:] # here check for True arguments in conjunction
                 except KeyError:
                     pass
         
         # then apply induction to each variable for predicates
-        if stmt[0] in predicates():
-            for var, typ in variables(stmt):
-                ind = induct(stmt, var, typ)
-                if ind is not None:
-                    yield var, ind
+        # if stmt[0] in predicates():
+        #     for var, typ in variables(stmt):
+        #         ind = induct(stmt, var, typ)
+        #         if ind is not None:
+        #             yield var, ind
 
 ## Distance
 
