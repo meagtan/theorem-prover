@@ -84,7 +84,7 @@ def applicable_rules_aux(stmt, typ = True):
     'Generate new statements that can be derived from stmt by the application of a rule.'
     # if there is a rule that stmt matches (also consider conjunctions), yield that and True
     for rule in rules:
-        if matches(rule, stmt, typ):
+        if matches(rule, stmt, typ) is not False:
             yield rule, True
             return
     
